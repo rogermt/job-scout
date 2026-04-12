@@ -14,7 +14,7 @@ import requests
 from bs4 import BeautifulSoup, Tag
 
 from src.config_manager import PlatformConfig
-from src.job_discovery.indeed_scraper import IndeedScraper
+from src.discovery.platforms.indeed_scraper import IndeedScraper
 
 
 @pytest.fixture

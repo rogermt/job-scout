@@ -15,7 +15,7 @@ from typing import Any
 import pytest
 
 from src.config_manager import PlatformConfig
-from src.job_discovery import get_scraper, list_scrapers
+from src.discovery.platforms import get_scraper, list_scrapers
 
 # Configure logging for tests
 logging.basicConfig(level=logging.DEBUG)
@@ -107,7 +107,7 @@ class TestIndeedScraper:
 
     def test_parse_salary_ranges(self):
         """Test salary parsing logic."""
-        from src.job_discovery.indeed_scraper import IndeedScraper
+        from src.discovery.platforms.indeed_scraper import IndeedScraper
 
         config = PlatformConfig()
         scraper = IndeedScraper("indeed", config)
@@ -130,7 +130,7 @@ class TestReedScraper:
     @pytest.fixture
     def reed_scraper(self, platform_configs):
         """Create Reed scraper instance."""
-        from src.job_discovery.reed_scraper import ReedScraper
+        from src.discovery.platforms.reed_scraper import ReedScraper
 
         return ReedScraper(platform_configs["reed"])
 
@@ -180,7 +180,7 @@ class TestScraperIntegration:
 
     def test_reed_scrape_single_page(self, platform_configs):
         """Test scraping a single page from Reed."""
-        from src.job_discovery.reed_scraper import ReedScraper
+        from src.discovery.platforms.reed_scraper import ReedScraper
 
         scraper = ReedScraper(platform_configs["reed"])
 

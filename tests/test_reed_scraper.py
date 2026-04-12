@@ -11,7 +11,7 @@ from unittest.mock import Mock, patch, MagicMock
 import pytest
 from bs4 import BeautifulSoup, Tag
 
-from src.job_discovery.reed_scraper import ReedScraper
+from src.discovery.platforms.reed_scraper import ReedScraper
 
 
 class TestInit:
