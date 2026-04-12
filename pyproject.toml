@@ -16,4 +16,5 @@ test = ["pytest>=7.0.0", "pytest-cov>=4.0.0"]
 lint = ["ruff>=0.1.0", "black>=23.0.0", "mypy>=1.0.0"]
 
 [tool.setuptools]
+package-dir = {"": "src"}
 packages = ["jobscout"]
