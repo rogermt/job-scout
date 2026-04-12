@@ -11,7 +11,7 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install dependencies
+      - name: Install and Run Pre-Commit
         run: |
           pip install uv
           uv venv
@@ -19,9 +19,7 @@ jobs:
           uv pip install pre-commit
           uv pip install -e . --no-deps
           uv pip install -r requirements.txt
-
-      - name: Run pre-commit
-        run: pre-commit run --all-files
+          pre-commit run --all-files
 
       - name: Run tests
         run: pytest
