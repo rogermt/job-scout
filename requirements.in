@@ -1,0 +1,12 @@
+# Core dependencies
+-e .
+reportlab>=4.0.0
+sqlalchemy>=2.0.0
+pydantic>=2.0.0
+structlog>=23.0.0
+tenacity>=8.0.0
+pre-commit>=3.0.0
+pytest>=7.0.0
+ruff>=0.1.0
+black>=23.0.0
+mypy>=1.0.0
