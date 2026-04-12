@@ -10,7 +10,7 @@ from typing import Dict, Any
 import pytest
 import httpx
 
-from src.job_discovery.stackoverflow_scraper import StackOverflowScraper
+from src.discovery.platforms.stackoverflow_scraper import StackOverflowScraper
 
 
 class TestStackOverflowScraper:

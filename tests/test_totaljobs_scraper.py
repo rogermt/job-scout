@@ -11,7 +11,7 @@ from unittest.mock import Mock, patch
 import pytest
 from bs4 import BeautifulSoup, Tag
 
-from src.job_discovery.totaljobs_scraper import TotaljobsScraper
+from src.discovery.platforms.totaljobs_scraper import TotaljobsScraper
 
 
 class TestInit:
