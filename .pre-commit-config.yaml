@@ -24,3 +24,11 @@ repos:
     hooks:
       - id: mypy
         additional_dependencies: [pydantic, sqlalchemy2]
+
+  - repo: local
+    hooks:
+      - id: uv-lock
+        name: Update uv lockfile
+        entry: uv pip compile requirements.in -o requirements.txt
+        language: system
+        pass_filenames: false
