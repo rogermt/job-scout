@@ -5,6 +5,14 @@ import logging
 import sys
 import os
 
+# Get project root (parent of scripts directory)
+script_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(script_dir)  # Go up from scripts/ to project root
+
+# Add project root to path so 'src.' imports work
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
 # Set up simple logging
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
@@ -41,18 +49,22 @@ def test_import_scraper_module():
 
     try:
         # Test base scraper
+        from src.discovery.platforms.base_scraper import BaseScraper  # noqa: F401
 
         logger.info(f"{GREEN}✓ BaseScraper imported{RESET}")
 
-        # Test scraper registry
+        # Test scraper registry - import the module and check it has the registry
+        from src.discovery import platforms as scraper_registry  # noqa: F401
 
         logger.info(f"{GREEN}✓ Scraper registry imported{RESET}")
 
         # Test config
+        from src.config_manager import PlatformConfig  # noqa: F401
 
         logger.info(f"{GREEN}✓ PlatformConfig imported{RESET}")
 
         # Test individual scrapers
+        from src.discovery.platforms.indeed_scraper import IndeedScraper  # noqa: F401
 
         logger.info(f"{GREEN}✓ IndeedScraper imported{RESET}")
 
@@ -72,7 +84,7 @@ def test_logging_vs_print():
     logger.info("TEST: Checking for print() statements")
     logger.info("=" * 60)
 
-    scraper_dir = "src/job_discovery"
+    scraper_dir = "src/discovery/platforms"
     issues = 0
 
     for filename in os.listdir(scraper_dir):
@@ -104,7 +116,7 @@ def test_type_annotations():
     logger.info("TEST: Checking type annotations")
     logger.info("=" * 60)
 
-    scraper_dir = "src/job_discovery"
+    scraper_dir = "src/discovery/platforms"
     issues = 0
 
     for filename in os.listdir(scraper_dir):
@@ -152,7 +164,7 @@ def test_registry():
     logger.info("TEST: Scraper registry")
     logger.info("=" * 60)
 
-    from src.job_discovery import list_scrapers
+    from src.discovery.platforms import list_scrapers
 
     scrapers = list_scrapers()
     logger.info(f"Registered scrapers: {scrapers}")
@@ -175,7 +187,7 @@ def test_instantiate_scraper():
     logger.info("=" * 60)
 
     from src.config_manager import PlatformConfig
-    from src.job_discovery import get_scraper
+    from src.discovery.platforms import get_scraper
 
     configs = {
         "indeed": PlatformConfig(enabled=True, region="uk"),
@@ -208,7 +220,7 @@ def test_scrapes():
     logger.info("=" * 60)
 
     from src.config_manager import PlatformConfig
-    from src.job_discovery import get_scraper
+    from src.discovery.platforms import get_scraper
 
     configs = {
         "indeed": PlatformConfig(enabled=True, region="uk"),
