@@ -1,5 +1,7 @@
 """Reed job scraper implementation."""
 
+from datetime import datetime
+
 import re
 from typing import Any, Optional
 
@@ -169,9 +171,15 @@ class ReedScraper(BaseScraper):
             }
         return {"min": None, "max": None, "currency": currency, "period": period}
 
-    def parse_posted_date(self, text: str) -> Optional[str]:
-        """Parse posted date text into date string."""
-        return text
+    def parse_posted_date(self, text: str) -> Optional[datetime]:
+        """Parse posted date text into datetime."""
+        match = re.search(r"(\d+)\s+days?\s+ago", text, re.IGNORECASE)
+        if match:
+            days = int(match.group(1))
+            from datetime import timedelta
+
+            return datetime.utcnow() - timedelta(days=days)
+        return None
 
     def _parse_posted_date(self, text: str) -> Optional[str]:
         """Parse posted date text into date string."""
