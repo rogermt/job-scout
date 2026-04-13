@@ -144,7 +144,7 @@ class BaseScraper(ABC):
             }
         return {"min": None, "max": None, "currency": currency, "period": None}
 
-    def parse_posted_date(self, text: str) -> Optional[str]:
+    def parse_posted_date(self, text: str) -> Optional[datetime]:
         """Parse 'posted X days ago' text into datetime."""
         import re
         from dateutil.relativedelta import relativedelta
@@ -155,13 +155,13 @@ class BaseScraper(ABC):
             amount = int(times[0][0])
             unit = times[0][1].lower()
             if "day" in unit:
-                return (now - relativedelta(days=amount)).strftime("%Y-%m-%d")
+                return now - relativedelta(days=amount)
             elif "week" in unit:
-                return (now - relativedelta(weeks=amount)).strftime("%Y-%m-%d")
+                return now - relativedelta(weeks=amount)
             elif "month" in unit:
-                return (now - relativedelta(months=amount)).strftime("%Y-%m-%d")
+                return now - relativedelta(months=amount)
             elif "hour" in unit:
-                return (now - relativedelta(hours=amount)).strftime("%Y-%m-%d")
+                return now - relativedelta(hours=amount)
         return None
 
 
