@@ -53,6 +53,8 @@ class JobPreferences(BaseModel):
 
 
 class PlatformConfig(BaseModel):
+    """Individual platform configuration."""
+
     # Extended fields for testing
     keywords: str = ""
     location: str = ""
@@ -60,7 +62,6 @@ class PlatformConfig(BaseModel):
     api_key: str | None = None
     endpoint: str | None = None
     extra_config: dict = {}
-    """Individual platform configuration."""
 
     enabled: bool = Field(default=True, description="Whether this platform is enabled")
     region: str = Field(default="uk", description="Region filter for the platform")
