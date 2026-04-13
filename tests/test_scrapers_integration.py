@@ -65,7 +65,7 @@ class TestScraperStandards:
         import os
         import re
 
-        scraper_dir = "src/job_discovery"
+        scraper_dir = "src/discovery/platforms"
         for filename in os.listdir(scraper_dir):
             if filename.endswith("_scraper.py"):
                 filepath = os.path.join(scraper_dir, filename)
