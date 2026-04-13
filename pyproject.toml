@@ -27,3 +27,16 @@ target-version = "py311"
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "N", "UP", "B", "A", "C4", "DTZ", "T20", "RSE", "PTH", "PYI", "RUF", "SLF"]
 ignore = ["E402", "T201", "PTH", "UP", "I001", "SLF001", "RUF", "E501", "B007", "DTZ003", "DTZ005"]
+
+[tool.coverage.run]
+source = ["src"]
+omit = ["tests/*", "**/__pycache__/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+]
