@@ -26,6 +26,6 @@ def exponential_backoff_retry(
         def wrapper(*args: Any, **kwargs: Any) -> T:
             return func(*args, **kwargs)
 
-        return wrapper
+        return wrapper  # type: ignore[no-any-return]
 
     return decorator
