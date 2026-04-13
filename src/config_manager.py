@@ -53,6 +53,14 @@ class JobPreferences(BaseModel):
 
 
 class PlatformConfig(BaseModel):
+
+    # Extended fields for testing
+    keywords: str = ""
+    location: str = ""
+    max_results: int = 50
+    api_key: str | None = None
+    endpoint: str | None = None
+    extra_config: dict = {}
     """Individual platform configuration."""
 
     enabled: bool = Field(default=True, description="Whether this platform is enabled")

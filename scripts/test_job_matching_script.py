@@ -42,7 +42,12 @@ mock_settings.job_preferences.remote_only = False
 mock_settings.job_preferences.get.return_value = 40.0  # min_score_threshold
 
 # Mock the imports that might cause issues
-sys.modules["src.config_manager"] = Mock()
+mock_cm = Mock()
+sys.modules["src.config_manager"] = mock_cm
+mock_cm.get_settings = lambda: mock_settings
+mock_cm.JobPreferences = Mock
+mock_cm.Settings = Mock
+sys.modules["src.logging_config"] = Mock()
 sys.modules["src.config_manager"].get_settings = lambda: mock_settings
 sys.modules["src.config_manager"].JobPreferences = Mock
 sys.modules["src.config_manager"].Settings = Mock

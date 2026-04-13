@@ -91,10 +91,10 @@ def test_scraper_instantiation() -> bool:
     logger.info("=" * 60)
 
     configs = {
-        "indeed": PlatformConfig(enabled=True, region="uk"),
-        "reed": PlatformConfig(enabled=True, region="uk"),
-        "totaljobs": PlatformConfig(enabled=True, region="uk"),
-        "stackoverflow": PlatformConfig(enabled=True, region="remote"),
+        "indeed": {"enabled": True, "region": "uk"},
+        "reed": {"enabled": True, "region": "uk"},
+        "totaljobs": {"enabled": True, "region": "uk"},
+        "stackoverflow": {"enabled": True, "region": "remote"},
     }
 
     for platform_name, config in configs.items():
@@ -168,10 +168,10 @@ def test_scrape_single_page() -> bool:
     logger.info("=" * 60)
 
     configs = {
-        "indeed": PlatformConfig(enabled=True, region="uk"),
-        "reed": PlatformConfig(enabled=True, region="uk"),
-        "totaljobs": PlatformConfig(enabled=True, region="uk"),
-        "stackoverflow": PlatformConfig(enabled=True, region="remote"),
+        "indeed": {"enabled": True, "region": "uk"},
+        "reed": {"enabled": True, "region": "uk"},
+        "totaljobs": {"enabled": True, "region": "uk"},
+        "stackoverflow": {"enabled": True, "region": "remote"},
     }
 
     queries = {

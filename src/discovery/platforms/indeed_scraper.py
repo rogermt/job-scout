@@ -143,3 +143,9 @@ class IndeedScraper(BaseScraper):
 
         date = datetime.now() - timedelta(days=days_ago)
         return date.strftime("%Y-%m-%d")
+
+    def _build_job_url(self, job_id: str) -> str:
+        """Build URL for a job details page."""
+        if not job_id:
+            return ""
+        return f"{self.base_url}/job/{job_id}"

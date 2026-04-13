@@ -224,12 +224,12 @@ class TestOtherMethods:
         assert scraper._is_remote_job("Python Developer", "London") is False
         assert scraper._is_remote_job("Work from home role", "UK") is True
 
-    def test_calculate_posted_date_with_valid_days_ago(
+    def testparse_posted_date_with_valid_days_ago(
         self, scraper: TotaljobsScraper
     ) -> None:
         """Test posted date calculation."""
         # "2 days ago" should create a date 2 days in the past
-        result = scraper._calculate_posted_date("2 days ago")
+        result = scraper.parse_posted_date("2 days ago")
 
         # Should return a datetime object
         assert isinstance(result, datetime)

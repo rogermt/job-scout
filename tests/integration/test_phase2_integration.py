@@ -158,7 +158,7 @@ try:
         "€70,000 (EUR)",
     ]
 
-    scraper = BaseScraper("test", {"enabled": True, "base_url": "test"})
+    # Scraper = BaseScraper("test", {"enabled": True, "base_url": "test"})  # Skip abstract class
 
     print("Testing salary parsing (GBP focus):")
     for salary_text in test_salaries:

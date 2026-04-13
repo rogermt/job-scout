@@ -2,10 +2,9 @@ from typing import Optional, Dict, Any
 from pathlib import Path
 import yaml
 
+
 def tailor_cv(
-    base_cv: Dict[str, Any],
-    job_description: str,
-    output_path: Optional[Path] = None
+    base_cv: Dict[str, Any], job_description: str, output_path: Optional[Path] = None
 ) -> Optional[Path]:
     """
     Tailor a CV to a job description.

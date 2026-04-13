@@ -50,7 +50,7 @@ class TestIndeedScraperInit:
         scraper = IndeedScraper("indeed", config)
         assert hasattr(scraper, "_last_request_time")
         assert hasattr(scraper, "session")
-        assert scraper.session.headers["User-Agent"].startswith("Mozilla/5.0")
+        assert scraper.session.headers["User-Agent"].startswith("Mozilla/5.0")  # type: ignore[arg-type]
 
 
 class TestGetSearchUrl:
