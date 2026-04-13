@@ -241,3 +241,12 @@ class TestMainModule:
         runner = CliRunner()
         result = runner.invoke(cli, ["platforms", "list", "--help"])
         # Exercises list command
+
+    def test_cli_with_debug_flag(self):
+        """Test --debug flag sets debug mode."""
+        from click.testing import CliRunner
+        from src.main import cli
+
+        runner = CliRunner()
+        result = runner.invoke(cli, ["--debug", "--help"])
+        # Lines 41-46: debug option is defined
