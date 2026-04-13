@@ -293,7 +293,7 @@ class TestJobDataStructure:
             assert isinstance(job.get("url"), str), f"[{platform}] url must be string"
 
             # Optional fields with type validation
-            if "location" in job and job["location"]:
+            if job.get("location"):
                 assert isinstance(
                     job["location"], str
                 ), f"[{platform}] location must be string"
