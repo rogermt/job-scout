@@ -201,9 +201,9 @@ class TestScraperIntegration:
         assert isinstance(job["url"], str)
 
         if "posted_date" in job:
-            from datetime import datetime
-
-            assert isinstance(job["posted_date"], datetime)
+            assert isinstance(
+                job["posted_date"], str
+            ), "posted_date should be ISO date string"
 
     def test_reed_scrape_single_page(self, platform_configs):
         """Test scraping a single page from Reed."""
@@ -314,11 +314,9 @@ class TestJobDataStructure:
                 ), f"[{platform}] salary_max must be numeric"
 
             if "posted_date" in job and job["posted_date"]:
-                from datetime import datetime
-
                 assert isinstance(
-                    job["posted_date"], datetime
-                ), f"[{platform}] posted_date must be datetime"
+                    job["posted_date"], str
+                ), f"[{platform}] posted_date must be string"
 
     def test_remote_policy_extraction(self, sample_jobs):
         """Test that remote policy is correctly extracted when present."""
