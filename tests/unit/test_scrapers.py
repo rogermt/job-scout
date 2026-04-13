@@ -647,6 +647,16 @@ class TestBaseScraperMethods:
         result = indeed_scraper.is_enabled()
         assert isinstance(result, bool)
 
+    def test_parse_salary_decimal(self, indeed_scraper):
+        """Test parse_salary with decimal values."""
+        result = indeed_scraper.parse_salary("£45,500.50")
+        assert result["min"] == 45500.5
+
+    def test_parse_salary_no_currency_symbol(self, indeed_scraper):
+        """Test parse_salary defaults to USD when no symbol."""
+        result = indeed_scraper.parse_salary("50000-70000")
+        assert result["currency"] == "USD"
+
 
 class TestStackOverflowMethods:
     """Test StackOverflow scraper methods."""
