@@ -464,6 +464,83 @@ class TestBaseScraperMethods:
         result = indeed_scraper.has_next_page(html, 1)
         assert result is False
 
+    def test_scrape_jobs_empty_results(self, indeed_scraper):
+        """Test scrape_jobs with no results."""
+        from bs4 import BeautifulSoup
+        from unittest.mock import MagicMock, patch
+
+        mock_soup = MagicMock(spec=BeautifulSoup)
+        mock_soup.select.return_value = []
+
+        with patch.object(indeed_scraper, "fetch_page", return_value=mock_soup):
+            with patch.object(
+                indeed_scraper, "get_search_url", return_value="http://test"
+            ):
+                jobs = list(indeed_scraper.scrape_jobs("python", max_pages=1))
+                assert len(jobs) == 0
+
+    def test_scrape_jobs_fetch_failure(self, indeed_scraper):
+        """Test scrape_jobs handles fetch failures."""
+        from unittest.mock import patch
+
+        with patch.object(indeed_scraper, "fetch_page", return_value=None):
+            with patch.object(
+                indeed_scraper, "get_search_url", return_value="http://test"
+            ):
+                jobs = list(indeed_scraper.scrape_jobs("python", max_pages=1))
+                assert len(jobs) == 0
+
+    def test_parse_salary_with_commas(self, indeed_scraper):
+        """Test parse_salary handles numbers with commas."""
+        result = indeed_scraper.parse_salary("£50,000 - £75,000")
+        assert result["min"] == 50000
+        assert result["max"] == 75000
+
+    def test_parse_salary_with_pound(self, indeed_scraper):
+        """Test parse_salary handles pound symbol."""
+        result = indeed_scraper.parse_salary("£45000")
+        assert result["min"] == 45000
+
+    def test_parse_salary_no_numbers(self, indeed_scraper):
+        """Test parse_salary with no numeric values."""
+        result = indeed_scraper.parse_salary("Competitive")
+        assert result["min"] is None
+        assert result["max"] is None
+
+    def test_extract_job_listings(self, indeed_scraper):
+        """Test extract_job_listings returns list."""
+        from bs4 import BeautifulSoup
+
+        html = BeautifulSoup(
+            """
+            <html><div class="job">Job 1</div><div class="job">Job 2</div></html>
+        """,
+            "html.parser",
+        )
+        result = indeed_scraper.extract_job_listings(html)
+        assert isinstance(result, list)
+
+    def test_parse_job_listing(self, indeed_scraper):
+        """Test parse_job_listing returns dict."""
+        from bs4 import BeautifulSoup
+
+        html = BeautifulSoup('<div class="job"></div>', "html.parser")
+        element = html.find("div")
+        result = indeed_scraper.parse_job_listing(element)
+        assert result is None or isinstance(result, dict)
+
+    def test_get_search_url(self, indeed_scraper):
+        """Test get_search_url returns string."""
+        url = indeed_scraper.get_search_url("python", "London")
+        assert isinstance(url, str)
+        assert "python" in url.lower()
+
+    def test_get_job_details_returns_none(self, indeed_scraper):
+        """Test get_job_details handles errors gracefully."""
+        result = indeed_scraper.get_job_details("invalid-url")
+        # Should return None or dict, not crash
+        assert result is None or isinstance(result, dict)
+
 
 class TestStackOverflowMethods:
     """Test StackOverflow scraper methods."""
