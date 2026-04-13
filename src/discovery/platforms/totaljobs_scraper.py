@@ -127,7 +127,8 @@ class TotaljobsScraper(BaseScraper):
         location_lower = location.lower()
         if "remote" in title_lower or "work from home" in title_lower:
             return True
-        if "anywhere" in location_lower or "uk" in location_lower:
+        # Use word boundary for "anywhere" to avoid false positives
+        if re.search(r"\banywhere\b", location_lower):
             return True
         return False
 
