@@ -4,10 +4,10 @@ from tenacity import (
     wait_exponential,
     retry_if_exception_type,
 )
-import logging
 from typing import Callable, TypeVar, Any
 
 T = TypeVar("T")
+
 
 def exponential_backoff_retry(
     max_attempts: int = 3,
@@ -15,6 +15,7 @@ def exponential_backoff_retry(
     max_wait: float = 10.0,
 ) -> Callable:
     """Decorator for exponential backoff retries."""
+
     def decorator(func: Callable[..., T]) -> Callable[..., T]:
         @retry(
             stop=stop_after_attempt(max_attempts),
@@ -24,5 +25,7 @@ def exponential_backoff_retry(
         )
         def wrapper(*args: Any, **kwargs: Any) -> T:
             return func(*args, **kwargs)
-        return wrapper
+
+        return wrapper  # type: ignore[no-any-return]
+
     return decorator

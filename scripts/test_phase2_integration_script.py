@@ -1,29 +1,28 @@
 #!/usr/bin/env python3
 """Phase 2 Integration Test - UK Job Discovery
 Test all 4 UK scrapers plus job matching algorithm"""
+
 import sys
 from pathlib import Path
 
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
-print("="*70)
+print("=" * 70)
 print("PHASE 2 INTEGRATION TEST - UK JOB DISCOVERY")
-print("="*70)
+print("=" * 70)
 
 # Test 1: Module Imports
 print("\n[Test 1] Module Imports...")
 try:
-    from job_discovery import list_scrapers, get_scraper
-    from job_discovery.job_matching import JobMatcher, JobPreferences
-    from job_discovery.indeed_scraper import IndeedScraper
-    from job_discovery.reed_scraper import ReedScraper  
-    from job_discovery.totaljobs_scraper import TotaljobsScraper
-    from job_discovery.stackoverflow_scraper import StackOverflowScraper
+    from src.discovery.platforms import list_scrapers, get_scraper
+    from src.discovery.platforms.job_matching import JobMatcher, JobPreferences
+
     print("✅ All imports successful")
 except Exception as e:
     print(f"❌ Import failed: {e}")
     import traceback
+
     traceback.print_exc()
     sys.exit(1)
 
@@ -32,7 +31,7 @@ print("\n[Test 2] Scraper Registry...")
 try:
     scrapers = list_scrapers()
     print(f"✅ Found {len(scrapers)} scrapers: {', '.join(scrapers)}")
-    
+
     for name in scrapers:
         config = {"enabled": True, "base_url": "test"}
         scraper = get_scraper(name, config)
@@ -40,6 +39,7 @@ try:
 except Exception as e:
     print(f"❌ Registry test failed: {e}")
     import traceback
+
     traceback.print_exc()
 
 # Test 3: Job Matching
@@ -53,74 +53,113 @@ try:
         preferred_contract_type="permanent",
         preferred_remote_policy="hybrid",
     )
-    
+
     matcher = JobMatcher(prefs)
     print("✅ JobMatcher created with UK preferences")
-    
+
     # Test job samples representing UK job market
     test_jobs = [
         {
-            "id": "1", "platform": "indeed", "title": "Python Developer",
-            "company": "Tech London Ltd", "location": "London, UK",
-            "salary": {"min": 55000, "max": 75000, "currency": "GBP", "period": "yearly"},
-            "remote_policy": "hybrid", "contract_type": "permanent",
+            "id": "1",
+            "platform": "indeed",
+            "title": "Python Developer",
+            "company": "Tech London Ltd",
+            "location": "London, UK",
+            "salary": {
+                "min": 55000,
+                "max": 75000,
+                "currency": "GBP",
+                "period": "yearly",
+            },
+            "remote_policy": "hybrid",
+            "contract_type": "permanent",
             "description": "Python, Django, PostgreSQL, AWS. Modern fintech.",
-            "apply_url": "http://example.com/apply"
+            "apply_url": "http://example.com/apply",
         },
         {
-            "id": "2", "platform": "reed", "title": "Senior Python Engineer",
-            "company": "Manchester Tech", "location": "Manchester",
-            "salary": {"min": 65000, "max": 85000, "currency": "GBP", "period": "yearly"},
-            "remote_policy": "remote", "contract_type": "permanent",
+            "id": "2",
+            "platform": "reed",
+            "title": "Senior Python Engineer",
+            "company": "Manchester Tech",
+            "location": "Manchester",
+            "salary": {
+                "min": 65000,
+                "max": 85000,
+                "currency": "GBP",
+                "period": "yearly",
+            },
+            "remote_policy": "remote",
+            "contract_type": "permanent",
             "description": "Senior Python with leadership. Flask, FastAPI",
-            "apply_url": "http://example.com/apply"
+            "apply_url": "http://example.com/apply",
         },
         {
-            "id": "3", "platform": "totaljobs", "title": "Python Developer",
-            "company": "Edinburgh Fintech", "location": "Edinburgh, Scotland",
-            "salary": {"min": 50000, "max": 60000, "currency": "GBP", "period": "yearly"},
-            "remote_policy": "hybrid", "contract_type": "permanent",
+            "id": "3",
+            "platform": "totaljobs",
+            "title": "Python Developer",
+            "company": "Edinburgh Fintech",
+            "location": "Edinburgh, Scotland",
+            "salary": {
+                "min": 50000,
+                "max": 60000,
+                "currency": "GBP",
+                "period": "yearly",
+            },
+            "remote_policy": "hybrid",
+            "contract_type": "permanent",
             "description": "Java and Python. Financial services.",
-            "apply_url": "http://example.com/apply"
+            "apply_url": "http://example.com/apply",
         },
         {
-            "id": "4", "platform": "stackoverflow", "title": "Full Stack Developer",
-            "company": "RemoteTech", "location": "Remote - UK",
-            "salary": {"min": 70000, "max": 90000, "currency": "GBP", "period": "yearly"},
-            "remote_policy": "remote", "contract_type": "permanent",
+            "id": "4",
+            "platform": "stackoverflow",
+            "title": "Full Stack Developer",
+            "company": "RemoteTech",
+            "location": "Remote - UK",
+            "salary": {
+                "min": 70000,
+                "max": 90000,
+                "currency": "GBP",
+                "period": "yearly",
+            },
+            "remote_policy": "remote",
+            "contract_type": "permanent",
             "description": "Fully remote Python. Docker, AWS, microservices.",
-            "apply_url": "http://example.com/apply"
+            "apply_url": "http://example.com/apply",
         },
     ]
-    
+
     print("\nTesting job matching on UK roles:")
     for i, job in enumerate(test_jobs, 1):
         matches, score, reasons = matcher.match_job(job)
         status = "MATCH" if matches and score >= 70 else "maybe" if matches else "skip"
-        print(f"  {status:6s} | Score: {score:5.1f}/100 | {job['title']:25s} | {job['location']}")
+        print(
+            f"  {status:6s} | Score: {score:5.1f}/100 | {job['title']:25s} | {job['location']}"
+        )
         if score >= 80:
             print(f"         {reasons[:60]}...")
-            
+
 except Exception as e:
     print(f"❌ Job matching test failed: {e}")
     import traceback
+
     traceback.print_exc()
 
 # Test 4: Salary Parser
 print("\n[Test 4] UK Salary Parser...")
 try:
-    from job_discovery.base_scraper import BaseScraper
-    
+    from src.discovery.platforms.base_scraper import BaseScraper
+
     test_salaries = [
         "£30,000 - £50,000",
-        "£45k", 
+        "£45k",
         "£60,000 per year",
         "$80,000 - $120,000 (USD)",
         "€70,000 (EUR)",
     ]
-    
+
     scraper = BaseScraper("test", {"enabled": True, "base_url": "test"})
-    
+
     print("Testing salary parsing (GBP focus):")
     for salary_text in test_salaries:
         try:
@@ -129,29 +168,34 @@ try:
                 min_s, max_s, currency = result
                 if currency == "USD":
                     converted = (min_s or max_s) / 1.27
-                    print(f"  ✓ {salary_text:30s} → ${min_s or max_s:,} USD → £{converted:,.0f} GBP")
+                    print(
+                        f"  ✓ {salary_text:30s} → ${min_s or max_s:,} USD → £{converted:,.0f} GBP"
+                    )
                 elif currency == "EUR":
                     converted = (min_s or max_s) / 1.17
-                    print(f"  ✓ {salary_text:30s} → €{min_s or max_s:,} EUR → £{converted:,.0f} GBP")
+                    print(
+                        f"  ✓ {salary_text:30s} → €{min_s or max_s:,} EUR → £{converted:,.0f} GBP"
+                    )
                 else:
                     print(f"  ✓ {salary_text:30s} → £{min_s or max_s:,} GBP")
             else:
                 print(f"  ⚠ {salary_text:30s} → Could not parse")
         except Exception as e:
             print(f"  ⚠ Error with '{salary_text}': {e}")
-            
+
 except Exception as e:
     print(f"❌ Salary parser test failed: {e}")
     import traceback
+
     traceback.print_exc()
 
 # Final Summary
-print("\n" + "="*70)
+print("\n" + "=" * 70)
 print("✅ PHASE 2 INTEGRATION TEST - UK JOB DISCOVERY")
-print("="*70)
+print("=" * 70)
 print("\n✓ All 4 UK scrapers loaded and registered")
 print("✓ Job matching algorithm functional (UK focus)")
 print("✓ GBP salary parsing with currency conversion")
 print("✓ UK location/scoring system verified")
 print("\nReady for: Phase 3 - AI CV/Cover Letter Generation")
-print("="*70)
+print("=" * 70)

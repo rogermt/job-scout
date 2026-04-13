@@ -1,0 +1,1 @@
+# Mock discovery package

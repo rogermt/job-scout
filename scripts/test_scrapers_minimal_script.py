@@ -5,18 +5,23 @@ import logging
 import sys
 import os
 
+# Get project root (parent of scripts directory)
+script_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(script_dir)  # Go up from scripts/ to project root
+
+# Add project root to path so 'src.' imports work
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
 # Set up simple logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(levelname)s: %(message)s'
-)
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 
 # Colors
-GREEN = '\033[92m'
-RED = '\033[91m'
-YELLOW = '\033[93m'
-RESET = '\033[0m'
+GREEN = "\033[92m"
+RED = "\033[91m"
+YELLOW = "\033[93m"
+RESET = "\033[0m"
 
 
 def test_working_directory():
@@ -44,19 +49,23 @@ def test_import_scraper_module():
 
     try:
         # Test base scraper
-        from src.job_discovery.base_scraper import BaseScraper, register_scraper
+        from src.discovery.platforms.base_scraper import BaseScraper  # noqa: F401
+
         logger.info(f"{GREEN}✓ BaseScraper imported{RESET}")
 
-        # Test scraper registry
-        from src.job_discovery import get_scraper, list_scrapers
+        # Test scraper registry - import the module and check it has the registry
+        from src.discovery import platforms as scraper_registry  # noqa: F401
+
         logger.info(f"{GREEN}✓ Scraper registry imported{RESET}")
 
         # Test config
-        from src.config_manager import PlatformConfig
+        from src.config_manager import PlatformConfig  # noqa: F401
+
         logger.info(f"{GREEN}✓ PlatformConfig imported{RESET}")
 
         # Test individual scrapers
-        from src.job_discovery.indeed_scraper import IndeedScraper
+        from src.discovery.platforms.indeed_scraper import IndeedScraper  # noqa: F401
+
         logger.info(f"{GREEN}✓ IndeedScraper imported{RESET}")
 
         return True
@@ -64,6 +73,7 @@ def test_import_scraper_module():
     except Exception as e:
         logger.error(f"{RED}✗ Import failed: {e}{RESET}")
         import traceback
+
         traceback.print_exc()
         return False
 
@@ -74,7 +84,7 @@ def test_logging_vs_print():
     logger.info("TEST: Checking for print() statements")
     logger.info("=" * 60)
 
-    scraper_dir = "src/job_discovery"
+    scraper_dir = "src/discovery/platforms"
     issues = 0
 
     for filename in os.listdir(scraper_dir):
@@ -84,11 +94,11 @@ def test_logging_vs_print():
                 content = f.read()
 
             # Search for print statements (basic check)
-            lines = content.split('\n')
+            lines = content.split("\n")
             for i, line in enumerate(lines, 1):
                 stripped = line.strip()
-                if stripped.startswith('print('):
-                    if '__repr__' not in stripped:
+                if stripped.startswith("print("):
+                    if "__repr__" not in stripped:
                         logger.error(f"{filename}:{i} - {stripped}")
                         issues += 1
 
@@ -106,7 +116,7 @@ def test_type_annotations():
     logger.info("TEST: Checking type annotations")
     logger.info("=" * 60)
 
-    scraper_dir = "src/job_discovery"
+    scraper_dir = "src/discovery/platforms"
     issues = 0
 
     for filename in os.listdir(scraper_dir):
@@ -134,7 +144,9 @@ def test_type_annotations():
 
             if func_count > 0:
                 percentage = (annotated_count / func_count) * 100
-                logger.info(f"  {filename}: {annotated_count}/{func_count} functions have type hints ({percentage:.0f}%)")
+                logger.info(
+                    f"  {filename}: {annotated_count}/{func_count} functions have type hints ({percentage:.0f}%)"
+                )
 
                 if percentage < 80:
                     issues += 1
@@ -152,7 +164,7 @@ def test_registry():
     logger.info("TEST: Scraper registry")
     logger.info("=" * 60)
 
-    from src.job_discovery import list_scrapers
+    from src.discovery.platforms import list_scrapers
 
     scrapers = list_scrapers()
     logger.info(f"Registered scrapers: {scrapers}")
@@ -175,7 +187,7 @@ def test_instantiate_scraper():
     logger.info("=" * 60)
 
     from src.config_manager import PlatformConfig
-    from src.job_discovery import get_scraper
+    from src.discovery.platforms import get_scraper
 
     configs = {
         "indeed": PlatformConfig(enabled=True, region="uk"),
@@ -208,7 +220,7 @@ def test_scrapes():
     logger.info("=" * 60)
 
     from src.config_manager import PlatformConfig
-    from src.job_discovery import get_scraper
+    from src.discovery.platforms import get_scraper
 
     configs = {
         "indeed": PlatformConfig(enabled=True, region="uk"),
@@ -232,7 +244,9 @@ def test_scrapes():
 
             if jobs:
                 job = jobs[0]
-                logger.info(f"    Sample: {job.get('title', 'N/A')} at {job.get('company', 'N/A')}")
+                logger.info(
+                    f"    Sample: {job.get('title', 'N/A')} at {job.get('company', 'N/A')}"
+                )
 
         except Exception as e:
             logger.error(f"{RED}✗ {platform_name} scraping failed: {e}{RESET}")
@@ -266,6 +280,7 @@ def main():
         except Exception as e:
             logger.error(f"{RED}✗ {test_name}: CRASHED - {e}{RESET}")
             import traceback
+
             traceback.print_exc()
             results.append((test_name, False))
 
@@ -283,10 +298,14 @@ def main():
 
     logger.info("=" * 60)
     if passed == total:
-        logger.info(f"{GREEN}{passed}/{total} tests passed - All scrapers meet ForgeSyte standards!{RESET}")
+        logger.info(
+            f"{GREEN}{passed}/{total} tests passed - All scrapers meet ForgeSyte standards!{RESET}"
+        )
         sys.exit(0)
     else:
-        logger.error(f"{RED}{passed}/{total} tests passed - {total-passed} failures{RESET}")
+        logger.error(
+            f"{RED}{passed}/{total} tests passed - {total-passed} failures{RESET}"
+        )
         sys.exit(1)
 
 

@@ -5,10 +5,8 @@ Unit tests do NOT make real HTTP requests.
 """
 
 from unittest.mock import Mock, patch
-from typing import Dict, Any
 
 import pytest
-import httpx
 
 from src.discovery.platforms.stackoverflow_scraper import StackOverflowScraper
 
@@ -19,12 +17,12 @@ class TestStackOverflowScraper:
     @pytest.fixture
     def scraper(self) -> StackOverflowScraper:
         """Provide test instance."""
-        return StackOverflowScraper()
+        return StackOverflowScraper("stackoverflow", Mock())
 
     @pytest.fixture
     def mock_html(self):
         """HTML mock matching StackOverflowScraper pattern."""
-        return '''
+        return """
         <html>
         <body>
         <div class="job-item">
@@ -41,19 +39,18 @@ class TestStackOverflowScraper:
         </div>
         </body>
         </html>
-        '''
+        """
 
     def test_instantiation(self, scraper):
         """Test instantiation."""
         assert scraper is not None
 
-    @patch('httpx.Client.get')
-    def test_make_request_success(self, mock_get, scraper):
+    @patch.object(StackOverflowScraper, "fetch_page")
+    def test_make_request_success(self, mock_fetch, scraper):
         """Test successful HTTP request."""
-        mock_response = Mock()
-        mock_response.text = "<html>Test</html>"
-        mock_response.raise_for_status = Mock()
-        mock_get.return_value = mock_response
+        from bs4 import BeautifulSoup
 
-        scraper.get_job_count("python", "remote")
-        mock_get.assert_called_once()
+        mock_fetch.return_value = BeautifulSoup("<html>Test</html>", "html.parser")
+
+        scraper.get_job_details("https://stackoverflow.com/jobs/test")
+        mock_fetch.assert_called_once()

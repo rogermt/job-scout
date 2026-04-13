@@ -1,7 +1,7 @@
 from typing import Dict, Callable, TypeVar, Any
-from functools import singledispatch
 
 T = TypeVar("T")
+
 
 class Registry:
     def __init__(self):
@@ -11,6 +11,7 @@ class Registry:
         def decorator(func: Callable[..., T]) -> Callable[..., T]:
             self._registry[name] = func
             return func
+
         return decorator
 
     def get(self, name: str) -> Callable[..., Any]:
@@ -18,6 +19,7 @@ class Registry:
 
     def __contains__(self, name: str) -> bool:
         return name in self._registry
+
 
 # Global instance (module-level, not singleton)
 registry = Registry()

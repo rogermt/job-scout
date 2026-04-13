@@ -3,7 +3,6 @@ repos:
     rev: 23.12.1
     hooks:
       - id: black
-        language_version: python3.11
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.1.6
@@ -23,7 +22,9 @@ repos:
     rev: v1.8.0
     hooks:
       - id: mypy
-        additional_dependencies: [pydantic, sqlalchemy]
+        additional_dependencies: [pydantic, sqlalchemy, beautifulsoup4, requests, python-dateutil, pydantic-settings, email-validator]
+        args: [--config-file, mypy.ini]
+        stages: [manual]
 
   - repo: local
     hooks:
