@@ -219,6 +219,62 @@ class TestModuleFunctions:
         )
         assert result is not None
 
+    def test_job_matcher_salary_scoring_usd(self) -> None:
+        """Test salary scoring with USD conversion."""
+        from src.discovery.platforms.job_matching import JobMatcher
+
+        prefs = MagicMock()
+        prefs.titles = []
+        prefs.keywords = []
+        prefs.exclude_keywords = []
+        prefs.remote_only = False
+        prefs.locations = []
+        prefs.salary = MagicMock()
+        prefs.salary.min_gbp = 30000
+        prefs.salary.max_gbp = None
+        prefs.get = lambda k, d=None: {"min_gbp": 30000}.get(k, d)
+        prefs.contract_types = []
+        prefs.job_types = []
+        prefs.company_sizes = []
+
+        matcher = JobMatcher(prefs)
+        result = matcher.match_job(
+            {
+                "title": "Developer",
+                "salary": {"min": 50000, "currency": "USD", "period": "yearly"},
+                "location": {"original": "Remote", "is_remote": True},
+            }
+        )
+        assert result is not None
+
+    def test_job_matcher_salary_scoring_gbp(self) -> None:
+        """Test salary scoring with GBP."""
+        from src.discovery.platforms.job_matching import JobMatcher
+
+        prefs = MagicMock()
+        prefs.titles = []
+        prefs.keywords = []
+        prefs.exclude_keywords = []
+        prefs.remote_only = False
+        prefs.locations = []
+        prefs.salary = MagicMock()
+        prefs.salary.min_gbp = 30000
+        prefs.salary.max_gbp = None
+        prefs.get = lambda k, d=None: {"min_gbp": 30000}.get(k, d)
+        prefs.contract_types = []
+        prefs.job_types = []
+        prefs.company_sizes = []
+
+        matcher = JobMatcher(prefs)
+        result = matcher.match_job(
+            {
+                "title": "Developer",
+                "salary": {"min": 40000, "currency": "GBP", "period": "yearly"},
+                "location": {"original": "Remote", "is_remote": True},
+            }
+        )
+        assert result is not None
+
 
 class TestJobMatcherInit:
     """Test JobMatcher initialization."""
