@@ -108,7 +108,25 @@ class ReedScraper(BaseScraper):
         soup = self.fetch_page(job_url)
         if not soup:
             return None
-        return {}
+
+        # Handle both BeautifulSoup and string (for mocked tests)
+        if isinstance(soup, str):
+            soup = BeautifulSoup(soup, "html.parser")
+
+        # Extract job description
+        desc_elem = soup.select_one(
+            ".job-description__content, #job-description, .description"
+        )
+        description = desc_elem.get_text(strip=True) if desc_elem else ""
+
+        # Extract canonical URL if available, otherwise use job_url
+        canonical_elem = soup.select_one("link[rel='canonical']")
+        url = canonical_elem.get("href") if canonical_elem else job_url
+
+        return {
+            "url": url,
+            "description": description,
+        }
 
     def parse_salary(self, salary_text: str) -> dict[str, Any]:
         """Parse salary text into min, max, and currency."""

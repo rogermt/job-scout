@@ -286,5 +286,6 @@ class TestScrapeJobDetails:
         result = scraper.get_job_details("https://reed.co.uk/jobs/test")
 
         assert result is not None
-        # get_job_details returns empty dict when page is fetched successfully
-        assert result == {}
+        # get_job_details returns description and url when page is fetched
+        assert "description" in result
+        assert "url" in result
