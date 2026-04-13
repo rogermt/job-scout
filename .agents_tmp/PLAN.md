@@ -1,13 +1,13 @@
 # 1. OBJECTIVE
 
-Increase test coverage from current levels to **80%** on these specific platform files:
-- `src/discovery/platforms/base_scraper.py`: 34% → 80%
-- `src/discovery/platforms/indeed_scraper.py`: 68% → 80%
-- `src/discovery/platforms/job_matching.py`: 0% → 80%
-- `src/discovery/platforms/reed_scraper.py`: 77% → 80%
-- `src/discovery/platforms/stackoverflow_scraper.py`: 47% → 80%
+Increase test coverage to **minimum 80%** on 3 files that need it:
+- `base_scraper.py`: 52% → 80%+
+- `job_matching.py`: 68% → 80%+
+- `stackoverflow_scraper.py`: 68% → 80%
 
-Focus on **high-value edge cases and major functionality**, NOT minor tests or 100% coverage.
+**Already at 80% - skip:** indeed_scraper.py (80%), reed_scraper.py (80%)
+
+Focus on **HIGH VALUE edge cases and major functionality only** - no minor tests.
 
 # 2. CONTEXT SUMMARY
 

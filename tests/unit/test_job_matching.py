@@ -6,7 +6,32 @@ from unittest.mock import MagicMock, patch
 from src.discovery.platforms.job_matching import (
     JobMatcher,
     create_matcher,
+    get_settings,
+    get_job_preferences,
+    _init_logger,
 )
+
+
+class TestModuleFunctions:
+    """Test module-level functions."""
+
+    def test_get_settings_returns_config(self) -> None:
+        """Test get_settings returns configuration."""
+        config = get_settings()
+        assert config is not None
+        assert hasattr(config, "job_preferences")
+
+    def test_get_job_preferences_returns_class(self) -> None:
+        """Test get_job_preferences returns JobPreferences class."""
+        cls = get_job_preferences()
+        assert cls is not None
+        assert cls.__name__ == "JobPreferences"
+
+    def test_init_logger_returns_logger(self) -> None:
+        """Test _init_logger returns a logger."""
+        logger = _init_logger()
+        assert logger is not None
+        assert logger.name == "src.discovery.platforms.job_matching"
 
 
 class TestJobMatcherInit:

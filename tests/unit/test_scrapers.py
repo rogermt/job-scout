@@ -432,6 +432,38 @@ class TestBaseScraperMethods:
         result = indeed_scraper.parse_posted_date("yesterday")
         assert result is None
 
+    def test_can_scrape_enabled(self, indeed_scraper):
+        """Test can_scrape when enabled."""
+        assert indeed_scraper.can_scrape() is True
+
+    def test_can_scrape_disabled(self, platform_configs):
+        """Test can_scrape when disabled."""
+        from src.discovery.platforms.indeed_scraper import IndeedScraper
+
+        config = PlatformConfig(enabled=False, region="uk")
+        scraper = IndeedScraper("indeed", config)
+        assert scraper.can_scrape() is False
+
+    def test_is_enabled(self, indeed_scraper):
+        """Test is_enabled method."""
+        assert indeed_scraper.is_enabled() is True
+
+    def test_has_next_page_true(self, indeed_scraper):
+        """Test has_next_page returns True for pagination."""
+        from bs4 import BeautifulSoup
+
+        html = BeautifulSoup('<div class="pagination"><a>Next</a></div>', "html.parser")
+        result = indeed_scraper.has_next_page(html, 1)
+        assert isinstance(result, bool)
+
+    def test_has_next_page_false(self, indeed_scraper):
+        """Test has_next_page returns False when no pagination."""
+        from bs4 import BeautifulSoup
+
+        html = BeautifulSoup('<div class="content">No next page</div>', "html.parser")
+        result = indeed_scraper.has_next_page(html, 1)
+        assert result is False
+
 
 class TestStackOverflowMethods:
     """Test StackOverflow scraper methods."""
@@ -460,6 +492,47 @@ class TestStackOverflowMethods:
         """Test build_search_url with pagination."""
         url = stackoverflow_scraper.build_search_url("python", None, page=2)
         assert "pg=3" in url
+
+    def test_extract_job_listings_with_cards(self, stackoverflow_scraper):
+        """Test extract_job_listings finds job cards."""
+        from bs4 import BeautifulSoup
+
+        html = BeautifulSoup(
+            """
+            <html>
+                <div class="job-card" data-jobid="123">Job 1</div>
+                <div class="job-card" data-jobid="456">Job 2</div>
+            </html>
+        """,
+            "html.parser",
+        )
+        jobs = stackoverflow_scraper.extract_job_listings(html)
+        assert len(jobs) == 2
+
+    def test_extract_job_listings_empty(self, stackoverflow_scraper):
+        """Test extract_job_listings with no jobs."""
+        from bs4 import BeautifulSoup
+
+        html = BeautifulSoup("<html><body>No jobs</body></html>", "html.parser")
+        jobs = stackoverflow_scraper.extract_job_listings(html)
+        assert len(jobs) == 0
+
+    def test_parse_job_listing_with_job_id(self, stackoverflow_scraper):
+        """Test parse_job_listing extracts job ID."""
+        from bs4 import BeautifulSoup
+
+        html = BeautifulSoup('<div data-jobid="789">Test Job</div>', "html.parser")
+        result = stackoverflow_scraper.parse_job_listing(html.find())
+        assert result is not None
+        assert result["platform_id"] == "789"
+
+    def test_parse_job_listing_without_job_id(self, stackoverflow_scraper):
+        """Test parse_job_listing returns None for missing job ID."""
+        from bs4 import BeautifulSoup
+
+        html = BeautifulSoup('<div class="job-card">No ID here</div>', "html.parser")
+        result = stackoverflow_scraper.parse_job_listing(html.find())
+        assert result is None
 
 
 class TestReedScraperMethods:
