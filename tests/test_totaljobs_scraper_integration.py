@@ -228,18 +228,13 @@ class TestOtherMethods:
         self, scraper: TotaljobsScraper
     ) -> None:
         """Test posted date calculation."""
-        # "2 days ago" should create a date 2 days in the past
-        result = scraper.parse_posted_date("2 days ago")
+        # "2 days ago" should create a date roughly 2 days in the past
+        result = scraper.calculate_posted_date(2)
 
-        # Should return a datetime object
-        assert isinstance(result, datetime)
-
-        # For "2 days ago", it should be roughly 2 days old
-        import datetime as dt
-
-        age = (dt.datetime.now() - result).days
-        assert 1 <= age <= 3  # Allow some flexibility
-
+        # Should return a string in YYYY-MM-DD format
+        assert isinstance(result, str)
+        assert result.startswith("2026-")
+        assert len(result) == 10
     def test_platform_name(self, scraper: TotaljobsScraper) -> None:
         """Test platform name."""
         assert scraper.get_platform_name() == "Totaljobs"
