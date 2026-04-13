@@ -657,6 +657,32 @@ class TestBaseScraperMethods:
         result = indeed_scraper.parse_salary("50000-70000")
         assert result["currency"] == "USD"
 
+    def test_parse_salary_empty_returns_nulls(self, indeed_scraper):
+        """Test parse_salary returns null values for empty input."""
+        result = indeed_scraper.parse_salary("")
+        assert result["min"] is None
+        assert result["max"] is None
+
+    def test_parse_salary_no_numbers_returns_currency(self, indeed_scraper):
+        """Test parse_salary returns currency even without numbers."""
+        result = indeed_scraper.parse_salary("competitive")
+        assert result["currency"] == "USD"
+
+    def test_parse_posted_date_with_weeks(self, indeed_scraper):
+        """Test parse_posted_date with weeks."""
+        result = indeed_scraper.parse_posted_date("2 weeks ago")
+        assert result is not None
+
+    def test_parse_posted_date_with_months(self, indeed_scraper):
+        """Test parse_posted_date with months."""
+        result = indeed_scraper.parse_posted_date("1 month ago")
+        assert result is not None
+
+    def test_parse_posted_date_with_hours(self, indeed_scraper):
+        """Test parse_posted_date with hours."""
+        result = indeed_scraper.parse_posted_date("6 hours ago")
+        assert result is not None
+
 
 class TestStackOverflowMethods:
     """Test StackOverflow scraper methods."""

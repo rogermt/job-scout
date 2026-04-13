@@ -151,6 +151,74 @@ class TestModuleFunctions:
         result = matcher.match_job(job_remote)
         assert result is not None
 
+    def test_job_matcher_empty_job_dict(self) -> None:
+        """Test job_matcher with empty job dict."""
+        from src.discovery.platforms.job_matching import JobMatcher
+
+        prefs = MagicMock()
+        prefs.titles = []
+        prefs.keywords = []
+        prefs.exclude_keywords = []
+        prefs.remote_only = False
+        prefs.locations = []
+        prefs.salary = MagicMock()
+        prefs.salary.min_gbp = None
+        prefs.get = lambda k, d=None: d
+        prefs.contract_types = []
+        prefs.job_types = []
+        prefs.company_sizes = []
+
+        matcher = JobMatcher(prefs)
+        result = matcher.match_job({})
+        assert result is not None
+
+    def test_job_matcher_missing_location(self) -> None:
+        """Test job_matcher handles missing location."""
+        from src.discovery.platforms.job_matching import JobMatcher
+
+        prefs = MagicMock()
+        prefs.titles = []
+        prefs.keywords = []
+        prefs.exclude_keywords = []
+        prefs.remote_only = False
+        prefs.locations = []
+        prefs.salary = MagicMock()
+        prefs.salary.min_gbp = None
+        prefs.get = lambda k, d=None: d
+        prefs.contract_types = []
+        prefs.job_types = []
+        prefs.company_sizes = []
+
+        matcher = JobMatcher(prefs)
+        result = matcher.match_job({"title": "Developer"})
+        assert result is not None
+
+    def test_job_matcher_preferred_location_match(self) -> None:
+        """Test job_matcher location preference scoring."""
+        from src.discovery.platforms.job_matching import JobMatcher
+
+        prefs = MagicMock()
+        prefs.titles = []
+        prefs.keywords = []
+        prefs.exclude_keywords = []
+        prefs.remote_only = False
+        prefs.locations = ["london"]
+        prefs.salary = MagicMock()
+        prefs.salary.min_gbp = None
+        prefs.get = lambda k, d=None: d
+        prefs.contract_types = []
+        prefs.job_types = []
+        prefs.company_sizes = []
+
+        matcher = JobMatcher(prefs)
+        result = matcher.match_job(
+            {
+                "title": "Developer",
+                "location": {"original": "London", "is_remote": False},
+            }
+        )
+        assert result is not None
+
 
 class TestJobMatcherInit:
     """Test JobMatcher initialization."""
