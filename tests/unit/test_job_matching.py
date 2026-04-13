@@ -275,6 +275,33 @@ class TestModuleFunctions:
         )
         assert result is not None
 
+    def test_job_matcher_contract_type_match(self) -> None:
+        """Test contract type matching."""
+        from src.discovery.platforms.job_matching import JobMatcher
+
+        prefs = MagicMock()
+        prefs.titles = []
+        prefs.keywords = []
+        prefs.exclude_keywords = []
+        prefs.remote_only = False
+        prefs.locations = []
+        prefs.salary = MagicMock()
+        prefs.salary.min_gbp = None
+        prefs.get = lambda k, d=None: d
+        prefs.contract_types = ["full_time"]
+        prefs.job_types = []
+        prefs.company_sizes = []
+
+        matcher = JobMatcher(prefs)
+        result = matcher.match_job(
+            {
+                "title": "Developer",
+                "contract_type": "full_time",
+                "location": {"original": "Remote", "is_remote": True},
+            }
+        )
+        assert result is not None
+
 
 class TestJobMatcherInit:
     """Test JobMatcher initialization."""

@@ -663,6 +663,22 @@ class TestBaseScraperMethods:
         assert result["min"] is None
         assert result["max"] is None
 
+    def test_parse_salary_with_period(self, indeed_scraper):
+        """Test parse_salary with period."""
+        result = indeed_scraper.parse_salary("£50000 per month")
+        assert result["min"] == 50000
+        assert result["period"] == "monthly"
+
+    def test_parse_salary_daily(self, indeed_scraper):
+        """Test parse_salary with daily rate."""
+        result = indeed_scraper.parse_salary("£300 per day")
+        assert result["min"] == 300
+
+    def test_parse_salary_weekly(self, indeed_scraper):
+        """Test parse_salary with weekly rate."""
+        result = indeed_scraper.parse_salary("£1200 per week")
+        assert result["min"] == 1200
+
     def test_parse_salary_no_numbers_returns_currency(self, indeed_scraper):
         """Test parse_salary returns currency even without numbers."""
         result = indeed_scraper.parse_salary("competitive")
@@ -716,6 +732,63 @@ class TestBaseScraperMethods:
                         jobs = list(indeed_scraper.scrape_jobs("python", max_pages=1))
                         assert len(jobs) == 1
                         assert jobs[0]["title"] == "Developer"
+
+    def test_is_enabled_true(self, platform_configs):
+        """Test is_enabled returns True when enabled."""
+        from src.discovery.platforms.indeed_scraper import IndeedScraper
+
+        config = platform_configs["indeed"]
+        scraper = IndeedScraper("indeed", config)
+        assert scraper.is_enabled() is True
+
+    def test_is_enabled_false(self, platform_configs):
+        """Test is_enabled returns False when disabled."""
+        from src.discovery.platforms.indeed_scraper import IndeedScraper
+
+        config = platform_configs["indeed"]
+        config.enabled = False
+        scraper = IndeedScraper("indeed", config)
+        assert scraper.is_enabled() is False
+
+    def test_can_scrape_when_enabled(self, platform_configs):
+        """Test can_scrape returns True when enabled."""
+        from src.discovery.platforms.indeed_scraper import IndeedScraper
+
+        config = platform_configs["indeed"]
+        config.enabled = True
+        scraper = IndeedScraper("indeed", config)
+        assert scraper.can_scrape() is True
+
+    def test_fetch_page_error_handling(self, platform_configs):
+        """Test fetch_page returns None on request error."""
+        from src.discovery.platforms.indeed_scraper import IndeedScraper
+        from unittest.mock import patch
+        import requests
+
+        config = platform_configs["indeed"]
+        scraper = IndeedScraper("indeed", config)
+
+        with patch.object(scraper, "_make_request") as mock_request:
+            mock_request.side_effect = requests.RequestException("Connection error")
+            result = scraper.fetch_page("http://test.com")
+            assert result is None
+
+    def test_make_request_direct(self, platform_configs):
+        """Test _make_request method directly."""
+        from src.discovery.platforms.indeed_scraper import IndeedScraper
+        from unittest.mock import patch, MagicMock
+
+        config = platform_configs["indeed"]
+        scraper = IndeedScraper("indeed", config)
+
+        with patch.object(scraper.session, "request") as mock_request:
+            mock_response = MagicMock()
+            mock_response.status_code = 200
+            mock_response.content = b"<html>test</html>"
+            mock_request.return_value = mock_response
+
+            result = scraper._make_request("http://test.com")
+            assert result is not None
 
 
 class TestStackOverflowMethods:
