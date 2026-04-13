@@ -8,7 +8,7 @@ Settings = MagicMock()
 get_logger = MagicMock()
 
 
-@pytest.mark.skip(reason="Job matching integration tests deferred to Phase 4")
+@pytest.mark.integration
 def test_job_matching():
     """Integration tests for JobMatcher scoring logic.
 

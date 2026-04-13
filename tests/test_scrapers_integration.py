@@ -175,7 +175,7 @@ class TestReedScraper:
 
 
 @pytest.mark.integration
-@pytest.mark.skip(reason="Integration test - requires real HTTP requests")
+@pytest.mark.skip(reason="Run locally - requires real HTTP requests")
 class TestScraperIntegration:
     """Integration tests for scrapers with actual HTTP requests."""
 
@@ -250,7 +250,8 @@ class TestScraperIntegration:
 
 
 @pytest.mark.integration
-@pytest.mark.skip(reason="Depends on integration tests")
+@pytest.mark.skip(reason="Run locally - depends on integration tests")
+@pytest.mark.integration
 class TestJobDataStructure:
     """Test that returned job data has correct structure and types."""
 
