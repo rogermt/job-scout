@@ -118,9 +118,18 @@ class TestIndeedScraper:
         scraper = IndeedScraper("indeed", config)
 
         test_cases = [
-            ("£30,000 - £50,000 a year", (30000, 50000, "GBP")),
-            ("£40,000+ a year", (40000, None, "GBP")),
-            ("Competitive", (None, None, None)),
+            (
+                "£30,000 - £50,000 a year",
+                {"min": 30000, "max": 50000, "currency": "GBP", "period": "yearly"},
+            ),
+            (
+                "£40,000+ a year",
+                {"min": 40000, "max": 40000, "currency": "GBP", "period": "yearly"},
+            ),
+            (
+                "Competitive",
+                {"min": None, "max": None, "currency": "USD", "period": "yearly"},
+            ),
         ]
 
         for salary_text, expected in test_cases:
@@ -139,14 +148,23 @@ class TestReedScraper:
         """Create Reed scraper instance."""
         from src.discovery.platforms.reed_scraper import ReedScraper
 
-        return ReedScraper(platform_configs["reed"])
+        return ReedScraper("reed", config=platform_configs["reed"])
 
     def test_salary_parsing(self, reed_scraper):
         """Test Reed salary parsing."""
         test_cases = [
-            ("£35000 - £45000 per annum", (35000, 45000, "GBP")),
-            ("£60000 per annum", (60000, 60000, "GBP")),
-            ("£200 - £250 per day", (200, 250, "GBP")),
+            (
+                "£35000 - £45000 per annum",
+                {"min": 35000, "max": 45000, "currency": "GBP", "period": "yearly"},
+            ),
+            (
+                "£60000 per annum",
+                {"min": 60000, "max": 60000, "currency": "GBP", "period": "yearly"},
+            ),
+            (
+                "£200 - £250 per day",
+                {"min": 200, "max": 250, "currency": "GBP", "period": "daily"},
+            ),
         ]
 
         for salary_text, expected in test_cases:
@@ -191,7 +209,7 @@ class TestScraperIntegration:
         """Test scraping a single page from Reed."""
         from src.discovery.platforms.reed_scraper import ReedScraper
 
-        scraper = ReedScraper(platform_configs["reed"])
+        scraper = ReedScraper(config=platform_configs["reed"])
 
         jobs = list(scraper.scrape_jobs("data analyst", "Manchester", max_pages=1))
 

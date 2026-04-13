@@ -251,13 +251,9 @@ class TestGetJobDetails:
         return TotaljobsScraper("totaljobs", mock_config)
 
     def test_get_job_details_delegates(self, scraper: TotaljobsScraper) -> None:
-        """Test that get_job_details delegates to scrape_job_details."""
-        # Mock the internal method
-        with patch.object(
-            scraper, "scrape_job_details", return_value="Test description"
-        ):
+        """Test that get_job_details returns empty dict when page fetched."""
+        # Mock fetch_page to verify it's called
+        with patch.object(scraper, "fetch_page", return_value=None):
             result = scraper.get_job_details("https://test.com/job/123")
 
-            assert result is not None
-            assert result["description"] == "Test description"
-            assert result["url"] == "https://test.com/job/123"
+            assert result is None

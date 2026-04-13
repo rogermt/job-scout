@@ -45,13 +45,12 @@ class TestStackOverflowScraper:
         """Test instantiation."""
         assert scraper is not None
 
-    @patch("httpx.Client.get")
-    def test_make_request_success(self, mock_get, scraper):
+    @patch.object(StackOverflowScraper, "fetch_page")
+    def test_make_request_success(self, mock_fetch, scraper):
         """Test successful HTTP request."""
-        mock_response = Mock()
-        mock_response.text = "<html>Test</html>"
-        mock_response.raise_for_status = Mock()
-        mock_get.return_value = mock_response
+        from bs4 import BeautifulSoup
 
-        scraper.get_job_count("python", "remote")
-        mock_get.assert_called_once()
+        mock_fetch.return_value = BeautifulSoup("<html>Test</html>", "html.parser")
+
+        scraper.get_job_details("https://stackoverflow.com/jobs/test")
+        mock_fetch.assert_called_once()
