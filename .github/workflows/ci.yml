@@ -16,8 +16,7 @@ jobs:
           pip install uv
           uv venv
           source .venv/bin/activate
-          uv pip install pre-commit
-          uv pip install -e . --no-deps
+          uv pip install -e ".[test]"
           uv pip install -r requirements.txt
           pre-commit run --all-files
 
