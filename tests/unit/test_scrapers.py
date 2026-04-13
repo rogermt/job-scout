@@ -620,6 +620,33 @@ class TestBaseScraperMethods:
         assert result["min"] == 60000
         assert result["max"] == 60000
 
+    def test_scrape_jobs_yields_jobs(self, indeed_scraper):
+        """Test scrape_jobs is a generator that yields jobs."""
+        from unittest.mock import patch, MagicMock
+
+        mock_soup = MagicMock()
+        mock_soup.select.return_value = []
+
+        with patch.object(indeed_scraper, "fetch_page", return_value=mock_soup):
+            with patch.object(
+                indeed_scraper, "get_search_url", return_value="http://test"
+            ):
+                result = indeed_scraper.scrape_jobs("python", max_pages=1)
+                # Should be a generator
+                import types
+
+                assert isinstance(result, types.GeneratorType)
+
+    def test_can_scrape_returns_bool(self, indeed_scraper):
+        """Test can_scrape returns boolean."""
+        result = indeed_scraper.can_scrape()
+        assert isinstance(result, bool)
+
+    def test_is_enabled_returns_bool(self, indeed_scraper):
+        """Test is_enabled returns boolean."""
+        result = indeed_scraper.is_enabled()
+        assert isinstance(result, bool)
+
 
 class TestStackOverflowMethods:
     """Test StackOverflow scraper methods."""

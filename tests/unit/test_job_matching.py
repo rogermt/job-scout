@@ -124,6 +124,33 @@ class TestModuleFunctions:
         result = matcher.match_job(job)
         assert result is not None
 
+    def test_job_matcher_remote_policy(self) -> None:
+        """Test remote policy scoring."""
+        from src.discovery.platforms.job_matching import JobMatcher
+
+        prefs = MagicMock()
+        prefs.titles = []
+        prefs.keywords = []
+        prefs.exclude_keywords = []
+        prefs.remote_only = True
+        prefs.locations = []
+        prefs.salary = MagicMock()
+        prefs.salary.min_gbp = None
+        prefs.get = lambda k, d=None: d
+        prefs.contract_types = []
+        prefs.job_types = []
+        prefs.company_sizes = []
+
+        matcher = JobMatcher(prefs)
+
+        job_remote = {
+            "title": "Developer",
+            "location": {"original": "Remote", "is_remote": True},
+            "remote_policy": "full",
+        }
+        result = matcher.match_job(job_remote)
+        assert result is not None
+
 
 class TestJobMatcherInit:
     """Test JobMatcher initialization."""
