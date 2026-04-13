@@ -1,4 +1,5 @@
 """Tests for main.py CLI."""
+
 from click.testing import CliRunner
 
 import sys
@@ -95,17 +96,20 @@ class TestMainModule:
     def test_main_import(self):
         """Test importing main exercises the module."""
         import src.main  # noqa: F401
+
         # Just importing exercises top-level code
         assert hasattr(src.main, "cli")
 
     def test_cli_variable(self):
         """Test cli is defined."""
         from src.main import cli
+
         assert cli is not None
 
     def test_console_variable(self):
         """Test console is defined."""
         from src.main import console
+
         assert console is not None
 
     def test_settings_get_enabled_platforms(self):
@@ -221,7 +225,7 @@ class TestMainModule:
 
         runner = CliRunner()
         # Try to invoke search (even if it fails, it exercises the code path)
-        result = runner.invoke(cli, ["search", "--help"])
+        _ = runner.invoke(cli, ["search", "--help"])
         # We're just exercising the decorator chain
 
     def test_cli_invoke_platforms_help(self):
@@ -230,7 +234,7 @@ class TestMainModule:
         from src.main import cli
 
         runner = CliRunner()
-        result = runner.invoke(cli, ["platforms", "--help"])
+        _ = runner.invoke(cli, ["platforms", "--help"])
         # Exercises the platforms group
 
     def test_cli_invoke_list_help(self):
@@ -239,7 +243,7 @@ class TestMainModule:
         from src.main import cli
 
         runner = CliRunner()
-        result = runner.invoke(cli, ["platforms", "list", "--help"])
+        _ = runner.invoke(cli, ["platforms", "list", "--help"])
         # Exercises list command
 
     def test_cli_with_debug_flag(self):
@@ -248,5 +252,5 @@ class TestMainModule:
         from src.main import cli
 
         runner = CliRunner()
-        result = runner.invoke(cli, ["--debug", "--help"])
+        _ = runner.invoke(cli, ["--debug", "--help"])
         # Lines 41-46: debug option is defined
