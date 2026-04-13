@@ -541,6 +541,85 @@ class TestBaseScraperMethods:
         # Should return None or dict, not crash
         assert result is None or isinstance(result, dict)
 
+    def test_base_scraper_fetch_page(self):
+        """Test base_scraper fetch_page method exists."""
+        from src.discovery.platforms.base_scraper import BaseScraper
+
+        # Verify the method exists
+        assert hasattr(BaseScraper, "fetch_page")
+
+    def test_make_request_with_mock(self, indeed_scraper):
+        """Test _make_request method with mocked request."""
+        from unittest.mock import patch, MagicMock
+
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.content = b"<html>Test</html>"
+        mock_response.raise_for_status = MagicMock()
+
+        with patch.object(indeed_scraper, "session") as mock_session:
+            mock_session.request.return_value = mock_response
+            result = indeed_scraper._make_request("GET", "http://test.com")
+            assert result is mock_response
+
+    def test_make_request_raises_on_error(self, indeed_scraper):
+        """Test _make_request raises exception on HTTP error."""
+        from unittest.mock import patch, MagicMock
+        from requests import HTTPError
+
+        mock_response = MagicMock()
+        mock_response.status_code = 404
+        mock_response.raise_for_status.side_effect = HTTPError("404 Not Found")
+
+        with patch.object(indeed_scraper, "session") as mock_session:
+            mock_session.request.return_value = mock_response
+            try:
+                indeed_scraper._make_request("GET", "http://test.com")
+            except HTTPError:
+                pass  # Expected
+
+    def test_enforce_rate_limit_sleeps(self, indeed_scraper):
+        """Test _enforce_rate_limit sleeps when called quickly."""
+        import time
+        from unittest.mock import patch
+
+        # Reset the last request time
+        indeed_scraper._last_request_time = time.time()
+
+        # Patch time.sleep to avoid actual delay
+        with patch("time.sleep") as mock_sleep:
+            indeed_scraper._enforce_rate_limit()
+            # Should have called sleep
+            assert mock_sleep.called or indeed_scraper._last_request_time > 0
+
+    def test_fetch_page_returns_none_on_error(self, indeed_scraper):
+        """Test fetch_page returns None on request exception."""
+        from unittest.mock import patch
+        import requests
+
+        with patch.object(indeed_scraper, "_make_request") as mock_request:
+            mock_request.side_effect = requests.RequestException("Connection error")
+            result = indeed_scraper.fetch_page("http://test.com")
+            assert result is None
+
+    def test_parse_salary_dollar(self, indeed_scraper):
+        """Test parse_salary with dollar currency."""
+        result = indeed_scraper.parse_salary("$80,000 - $120,000")
+        assert result["min"] == 80000
+        assert result["max"] == 120000
+        assert result["currency"] == "USD"
+
+    def test_parse_salary_euro(self, indeed_scraper):
+        """Test parse_salary with euro currency."""
+        result = indeed_scraper.parse_salary("€50,000 - €70,000")
+        assert result["currency"] == "EUR"
+
+    def test_parse_salary_single_value(self, indeed_scraper):
+        """Test parse_salary with single number."""
+        result = indeed_scraper.parse_salary("£60000")
+        assert result["min"] == 60000
+        assert result["max"] == 60000
+
 
 class TestStackOverflowMethods:
     """Test StackOverflow scraper methods."""

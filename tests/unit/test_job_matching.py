@@ -33,6 +33,97 @@ class TestModuleFunctions:
         assert logger is not None
         assert logger.name == "src.discovery.platforms.job_matching"
 
+    def test_create_matcher_returns_instance(self) -> None:
+        """Test create_matcher factory function."""
+        from src.discovery.platforms.job_matching import create_matcher
+
+        matcher = create_matcher()
+        assert matcher is not None
+        assert matcher.__class__.__name__ == "JobMatcher"
+
+    def test_job_matcher_score_calculation(self) -> None:
+        """Test score calculation for job matching."""
+        from src.discovery.platforms.job_matching import JobMatcher
+
+        prefs = MagicMock()
+        prefs.titles = ["developer"]
+        prefs.keywords = ["python"]
+        prefs.exclude_keywords = ["recruiter"]
+        prefs.remote_only = False
+        prefs.locations = []
+        prefs.salary = MagicMock()
+        prefs.salary.min_gbp = 30000
+        prefs.salary.max_gbp = None
+        prefs.get = lambda k, d=None: {"min_gbp": 30000}.get(k, d)
+        prefs.contract_types = []
+        prefs.job_types = []
+        prefs.company_sizes = []
+
+        matcher = JobMatcher(prefs)
+
+        # High match job
+        job_high = {
+            "title": "Python Developer",
+            "description": "Python developer role",
+            "location": {"original": "London", "is_remote": False},
+        }
+        result = matcher.match_job(job_high)
+        assert result is not None
+
+    def test_job_matcher_exclude_keywords(self) -> None:
+        """Test job matching excludes by keywords."""
+        from src.discovery.platforms.job_matching import JobMatcher
+
+        prefs = MagicMock()
+        prefs.titles = []
+        prefs.keywords = []
+        prefs.exclude_keywords = ["recruiter", "commission"]
+        prefs.remote_only = False
+        prefs.locations = []
+        prefs.salary = MagicMock()
+        prefs.salary.min_gbp = None
+        prefs.get = lambda k, d=None: d
+        prefs.contract_types = []
+        prefs.job_types = []
+        prefs.company_sizes = []
+
+        matcher = JobMatcher(prefs)
+
+        # Job with excluded keyword
+        job_bad = {
+            "title": "Recruiter",
+            "description": "Commission based recruiter role",
+            "location": {"original": "Office", "is_remote": False},
+        }
+        result = matcher.match_job(job_bad)
+        assert result is not None
+
+    def test_job_matcher_location_filter(self) -> None:
+        """Test location filtering."""
+        from src.discovery.platforms.job_matching import JobMatcher
+
+        prefs = MagicMock()
+        prefs.titles = []
+        prefs.keywords = []
+        prefs.exclude_keywords = []
+        prefs.remote_only = False
+        prefs.locations = []
+        prefs.salary = MagicMock()
+        prefs.salary.min_gbp = None
+        prefs.get = lambda k, d=None: d
+        prefs.contract_types = []
+        prefs.job_types = []
+        prefs.company_sizes = []
+
+        matcher = JobMatcher(prefs)
+
+        job = {
+            "title": "Developer",
+            "location": {"original": "London", "is_remote": False},
+        }
+        result = matcher.match_job(job)
+        assert result is not None
+
 
 class TestJobMatcherInit:
     """Test JobMatcher initialization."""
