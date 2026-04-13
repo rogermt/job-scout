@@ -7,13 +7,14 @@
 """
 
 import logging
+import os
 import sys
 
 # Add parent dir to path for imports
-sys.path.insert(0, "/teamspace/studios/this_studio/job-scout")
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src.config_manager import PlatformConfig
-from src.job_discovery import get_scraper, list_scrapers
+from src.discovery.platforms import get_scraper, list_scrapers
 
 # Set up logging
 logging.basicConfig(
@@ -59,7 +60,7 @@ def test_no_print_statements() -> bool:
     import os
     import re
 
-    scraper_dir = "src/job_discovery"
+    scraper_dir = "src/discovery/platforms"
     issues = []
 
     for filename in os.listdir(scraper_dir):
@@ -126,7 +127,7 @@ def test_real_implementation() -> bool:
 
     import os
 
-    scraper_dir = "src/job_discovery"
+    scraper_dir = "src/discovery/platforms"
     issues = []
 
     for filename in os.listdir(scraper_dir):
@@ -224,7 +225,7 @@ def test_type_annotations() -> bool:
 
     import os
 
-    scraper_dir = "src/job_discovery"
+    scraper_dir = "src/discovery/platforms"
     issues = []
 
     for filename in os.listdir(scraper_dir):
@@ -274,7 +275,7 @@ def test_error_handling() -> bool:
 
     import os
 
-    scraper_dir = "src/job_discovery"
+    scraper_dir = "src/discovery/platforms"
 
     # Check for tenacity decorators
     base_scraper_path = os.path.join(scraper_dir, "base_scraper.py")
