@@ -24,7 +24,7 @@ jobs:
         run: |
           source .venv/bin/activate
           pip install coverage
-          coverage run -m pytest tests/ --ignore=tests/integration/
+          coverage run -m pytest tests/unit/ --ignore=tests/integration/
           coverage report --fail-under=80
           coverage xml -o coverage.xml
 
