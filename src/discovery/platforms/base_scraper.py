@@ -113,12 +113,10 @@ class BaseScraper(ABC):
         pagination_links = soup.select("a[href*='page'], a[href*='next']")
         return len(pagination_links) > 0
 
-    def parse_salary(
-        self, salary_text: str
-    ) -> tuple[Optional[float], Optional[float], Optional[str]]:
+    def parse_salary(self, salary_text: str) -> dict[str, Any]:
         """Parse salary text into min, max, and currency."""
         if not salary_text:
-            return None, None, None
+            return {"min": None, "max": None, "currency": None, "period": None}
         import re
 
         currency = "GBP"
@@ -136,10 +134,15 @@ class BaseScraper(ABC):
         if numbers:
             min_sal = float(numbers[0])
             max_sal = float(numbers[-1]) if len(numbers) > 1 else min_sal
-            return min_sal, max_sal, currency
-        return None, None, currency
+            return {
+                "min": min_sal,
+                "max": max_sal,
+                "currency": currency,
+                "period": "yearly",
+            }
+        return {"min": None, "max": None, "currency": currency, "period": None}
 
-    def parse_posted_date(self, text: str) -> datetime:
+    def parse_posted_date(self, text: str) -> Optional[str]:
         """Parse 'posted X days ago' text into datetime."""
         import re
         from dateutil.relativedelta import relativedelta
@@ -150,14 +153,14 @@ class BaseScraper(ABC):
             amount = int(times[0][0])
             unit = times[0][1].lower()
             if "day" in unit:
-                return now - relativedelta(days=amount)
+                return (now - relativedelta(days=amount)).strftime("%Y-%m-%d")
             elif "week" in unit:
-                return now - relativedelta(weeks=amount)
+                return (now - relativedelta(weeks=amount)).strftime("%Y-%m-%d")
             elif "month" in unit:
-                return now - relativedelta(months=amount)
+                return (now - relativedelta(months=amount)).strftime("%Y-%m-%d")
             elif "hour" in unit:
-                return now - relativedelta(hours=amount)
-        return now
+                return (now - relativedelta(hours=amount)).strftime("%Y-%m-%d")
+        return None
 
 
 _scrapers: dict[str, type["BaseScraper"]] = {}
