@@ -1,6 +1,5 @@
 import structlog
 import logging
-from typing import Any
 
 
 def configure_logging() -> None:

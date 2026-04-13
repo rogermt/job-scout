@@ -5,10 +5,8 @@ Unit tests do NOT make real HTTP requests.
 """
 
 from unittest.mock import Mock, patch
-from typing import Dict, Any
 
 import pytest
-import httpx
 
 from src.discovery.platforms.stackoverflow_scraper import StackOverflowScraper
 
@@ -24,7 +22,7 @@ class TestStackOverflowScraper:
     @pytest.fixture
     def mock_html(self):
         """HTML mock matching StackOverflowScraper pattern."""
-        return '''
+        return """
         <html>
         <body>
         <div class="job-item">
@@ -41,13 +39,13 @@ class TestStackOverflowScraper:
         </div>
         </body>
         </html>
-        '''
+        """
 
     def test_instantiation(self, scraper):
         """Test instantiation."""
         assert scraper is not None
 
-    @patch('httpx.Client.get')
+    @patch("httpx.Client.get")
     def test_make_request_success(self, mock_get, scraper):
         """Test successful HTTP request."""
         mock_response = Mock()

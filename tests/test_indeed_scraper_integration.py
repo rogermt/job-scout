@@ -4,13 +4,9 @@ These tests verify the IndeedScraper logic without making real HTTP requests.
 All external dependencies (requests, BeautifulSoup) are mocked.
 """
 
-import logging
-from datetime import datetime
-from typing import Any, Dict
 from unittest.mock import Mock, patch
 
 import pytest
-import requests
 from bs4 import BeautifulSoup, Tag
 
 from src.config_manager import PlatformConfig
@@ -28,7 +24,7 @@ def config() -> PlatformConfig:
         max_results=50,
         api_key=None,
         endpoint=None,
-        extra_config={}
+        extra_config={},
     )
 
 
@@ -91,14 +87,14 @@ class TestExtractJobListings:
     def test_extract_job_listings_finds_cards(self, scraper: IndeedScraper) -> None:
         """Test extraction with mock BeautifulSoup containing job cards."""
         soup = BeautifulSoup(
-            '''
+            """
             <html>
                 <div class="job_seen_beacon">Job 1</div>
                 <div class="jobsearch-SerpJobCard">Job 2</div>
                 <div class="job_seen_beacon">Job 3</div>
             </html>
-            ''',
-            "html.parser"
+            """,
+            "html.parser",
         )
 
         cards = scraper.extract_job_listings(soup)
@@ -111,16 +107,18 @@ class TestExtractJobListings:
         cards = scraper.extract_job_listings(soup)
         assert len(cards) == 0
 
-    def test_extract_job_listings_different_css_classes(self, scraper: IndeedScraper) -> None:
+    def test_extract_job_listings_different_css_classes(
+        self, scraper: IndeedScraper
+    ) -> None:
         """Test extraction with various known CSS class variations."""
         soup = BeautifulSoup(
-            '''
+            """
             <html>
                 <div data-jobid="123" class="job_seen_beacon test-class">Job 1</div>
                 <div class="jobsearch-SerpJobCard mobile">Job 2</div>
             </html>
-            ''',
-            "html.parser"
+            """,
+            "html.parser",
         )
 
         cards = scraper.extract_job_listings(soup)
@@ -134,7 +132,7 @@ class TestParseJobListing:
         """Test parsing a complete job card with all fields."""
         # Note: The parser expects job cards to be INSIDE a container, not to BE the container
         element = BeautifulSoup(
-            '''
+            """
             <div>
                 <div class="job_seen_beacon" data-jk="abc123">
                     <h2 class="jobTitle"><span>Software Engineer</span></h2>
@@ -144,8 +142,8 @@ class TestParseJobListing:
                     <span class="date">1 day ago</span>
                 </div>
             </div>
-            ''',
-            "html.parser"
+            """,
+            "html.parser",
         )
 
         result = scraper.parse_job_listing(element)
@@ -163,9 +161,11 @@ class TestGetJobDetails:
     """Test fetching detailed job information."""
 
     @patch.object(IndeedScraper, "fetch_page")
-    def test_get_job_details_success(self, mock_fetch: Mock, scraper: IndeedScraper) -> None:
+    def test_get_job_details_success(
+        self, mock_fetch: Mock, scraper: IndeedScraper
+    ) -> None:
         """Test successful parsing of job details page."""
-        mock_html = '''
+        mock_html = """
             <html>
                 <div id="jobDescriptionText">
                     <p>We are looking for a senior developer.</p>
@@ -173,7 +173,7 @@ class TestGetJobDetails:
                 </div>
                 <div class="jobsearch-JobMetadataHeader-item">Remote</div>
             </html>
-        '''
+        """
         soup = BeautifulSoup(mock_html, "html.parser")
         mock_fetch.return_value = soup
 
@@ -186,7 +186,9 @@ class TestGetJobDetails:
         mock_fetch.assert_called_once_with("https://uk.indeed.com/viewjob?jk=abc123")
 
     @patch.object(IndeedScraper, "fetch_page")
-    def test_get_job_details_fetch_failure(self, mock_fetch: Mock, scraper: IndeedScraper) -> None:
+    def test_get_job_details_fetch_failure(
+        self, mock_fetch: Mock, scraper: IndeedScraper
+    ) -> None:
         """Test handling when fetch_page returns None."""
         mock_fetch.return_value = None
 
@@ -207,4 +209,3 @@ class TestBuildJobUrl:
         """Test building job URL with empty ID."""
         url = scraper._build_job_url("")
         assert url == "https://uk.indeed.com/viewjob?jk="
-

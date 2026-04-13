@@ -8,10 +8,9 @@
 
 import logging
 import sys
-from typing import Any
 
 # Add parent dir to path for imports
-sys.path.insert(0, '/teamspace/studios/this_studio/job-scout')
+sys.path.insert(0, "/teamspace/studios/this_studio/job-scout")
 
 from src.config_manager import PlatformConfig
 from src.job_discovery import get_scraper, list_scrapers
@@ -19,16 +18,16 @@ from src.job_discovery import get_scraper, list_scrapers
 # Set up logging
 logging.basicConfig(
     level=logging.INFO,
-    format='%(levelname)s - %(name)s - %(message)s',
-    handlers=[logging.StreamHandler()]
+    format="%(levelname)s - %(name)s - %(message)s",
+    handlers=[logging.StreamHandler()],
 )
 logger = logging.getLogger(__name__)
 
 # ANSI color codes
-GREEN = '\033[92m'
-RED = '\033[91m'
-YELLOW = '\033[93m'
-RESET = '\033[0m'
+GREEN = "\033[92m"
+RED = "\033[91m"
+YELLOW = "\033[93m"
+RESET = "\033[0m"
 
 
 def test_all_scrapers_registered() -> bool:
@@ -71,7 +70,7 @@ def test_no_print_statements() -> bool:
 
             for i, line in enumerate(lines, 1):
                 # Match print statements (but not in comments or __repr__)
-                if re.search(r'^[^#]*\s*print\s*\([^)]*\)', line):
+                if re.search(r"^[^#]*\s*print\s*\([^)]*\)", line):
                     if "__repr__" not in line and "test" not in filepath:
                         issues.append(f"{filename}:{i}: {line.strip()}")
 
@@ -139,7 +138,7 @@ def test_real_implementation() -> bool:
             # Check for indicators of mock data
             if "mock" in content.lower() or "sample" in content.lower():
                 # Verify it's in a comment or test
-                if not (content.startswith('#') or 'test' in filepath):
+                if not (content.startswith("#") or "test" in filepath):
                     continue
 
             # Check for BeautifulSoup usage (real HTML parsing)
@@ -153,7 +152,7 @@ def test_real_implementation() -> bool:
                     issues.append(f"{filename}: No HTTP request handling")
 
     if issues:
-        logger.warning(f"Potential mock data usage:")
+        logger.warning("Potential mock data usage:")
         for issue in issues:
             logger.warning(f"  ⚠ {issue}")
         return False
@@ -193,13 +192,19 @@ def test_scrape_single_page() -> bool:
             logger.info(f"  Found {len(jobs)} jobs")
 
             if not jobs:
-                logger.warning(f"  {YELLOW}⚠ No jobs found (might be rate limited or HTML changed){RESET}")
+                logger.warning(
+                    f"  {YELLOW}⚠ No jobs found (might be rate limited or HTML changed){RESET}"
+                )
                 continue
 
             # Validate job structure
             job = jobs[0]
-            assert isinstance(job["title"], str), f"[{platform_name}] title must be string"
-            assert isinstance(job["company"], str), f"[{platform_name}] company must be string"
+            assert isinstance(
+                job["title"], str
+            ), f"[{platform_name}] title must be string"
+            assert isinstance(
+                job["company"], str
+            ), f"[{platform_name}] company must be string"
             assert isinstance(job["url"], str), f"[{platform_name}] url must be string"
 
             logger.info(f"{GREEN}✓ {platform_name}: Valid structure{RESET}")
@@ -218,7 +223,6 @@ def test_type_annotations() -> bool:
     logger.info("=" * 60)
 
     import os
-    import re
 
     scraper_dir = "src/job_discovery"
     issues = []
@@ -242,7 +246,9 @@ def test_type_annotations() -> bool:
                 if in_class and line.startswith("def "):
                     # Check if it has type hints for parameter and return
                     if "->" not in line:
-                        issues.append(f"{filename}:{i}: Missing return type hint: {line}")
+                        issues.append(
+                            f"{filename}:{i}: Missing return type hint: {line}"
+                        )
 
                     # Check for parameter type hints (basic check)
                     if "(self" in line and ":" not in line.split("(")[1]:
@@ -266,7 +272,6 @@ def test_error_handling() -> bool:
     logger.info("TEST: Verifying error handling and retry logic")
     logger.info("=" * 60)
 
-    import inspect
     import os
 
     scraper_dir = "src/job_discovery"
@@ -312,6 +317,7 @@ def main():
         except Exception as e:
             logger.error(f"{RED}✗ {test_name}: CRASHED - {e}{RESET}")
             import traceback
+
             traceback.print_exc()
             results.append((test_name, False))
 
@@ -329,10 +335,14 @@ def main():
 
     logger.info("=" * 60)
     if passed == total:
-        logger.info(f"{GREEN}{passed}/{total} tests passed - All scrapers meet ForgeSyte standards!{RESET}")
+        logger.info(
+            f"{GREEN}{passed}/{total} tests passed - All scrapers meet ForgeSyte standards!{RESET}"
+        )
         sys.exit(0)
     else:
-        logger.error(f"{RED}{passed}/{total} tests passed - {total-passed} failures{RESET}")
+        logger.error(
+            f"{RED}{passed}/{total} tests passed - {total-passed} failures{RESET}"
+        )
         sys.exit(1)
 
 

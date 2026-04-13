@@ -98,22 +98,22 @@ def export_data(
 ) -> Path:
     """
     Export data from a source file in the specified format.
-    
+
     Args:
         source_file: Path to the source data file
         output_format: Target format (csv, json, parquet)
         include_metadata: Whether to include metadata in output
-        
+
     Returns:
         Path to the exported file
-        
+
     Raises:
         FileNotFoundError: If source file does not exist
         ValueError: If output_format is not supported
     """
     if not source_file.exists():
         raise FileNotFoundError(f"Source file not found: {source_file}")
-    
+
     # Implementation...
 ```
 
@@ -125,11 +125,11 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
-    
+
     database_url: str
     api_key: str
     debug_mode: bool = False
-    
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
@@ -185,14 +185,14 @@ class DataStore(Protocol):
 class DatabaseStore:
     def get(self, key: str) -> Any:
         return db.query(key)
-    
+
     def set(self, key: str, value: Any) -> None:
         db.store(key, value)
 
 class CacheStore:
     def get(self, key: str) -> Any:
         return cache.get(key)
-    
+
     def set(self, key: str, value: Any) -> None:
         cache.set(key, value)
 
@@ -271,7 +271,7 @@ Don't use the Singleton pattern. Python **modules** are the idiomatic way to han
 # ❌ Bad: Singleton pattern
 class DatabaseConnection:
     _instance = None
-    
+
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super().__new__(cls)

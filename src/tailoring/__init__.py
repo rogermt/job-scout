@@ -1,9 +1,4 @@
-"""CV Tailoring Module for Job Scout.
 
-Generates tailored CVs and cover letters based on job requirements.
-"""
+from src.tailoring.cv_tailor import tailor_cv
 
-from .cv_tailor import CVTailor
-from .cover_letter_generator import CoverLetterGenerator
-
-__all__ = ["CVTailor", "CoverLetterGenerator"]
+__all__ = ["tailor_cv"]

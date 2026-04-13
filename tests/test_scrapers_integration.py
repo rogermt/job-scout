@@ -10,7 +10,6 @@ This module tests all scraper implementations to ensure they:
 """
 
 import logging
-from typing import Any
 
 import pytest
 
@@ -74,14 +73,20 @@ class TestScraperStandards:
                     content = f.read()
 
                 # Check for print statements (but allow print in __repr__ or tests)
-                lines = content.split('\n')
+                lines = content.split("\n")
                 for i, line in enumerate(lines, 1):
-                    if re.search(r'^\s*print\s*\(', line) and "__repr__" not in line:
+                    if re.search(r"^\s*print\s*\(", line) and "__repr__" not in line:
                         logger.error(
                             "Found print statement in scraper",
-                            extra={"file": filename, "line": i, "content": line.strip()}
+                            extra={
+                                "file": filename,
+                                "line": i,
+                                "content": line.strip(),
+                            },
                         )
-                        pytest.fail(f"{filename}:{i} uses print() instead of logging: {line.strip()}")
+                        pytest.fail(
+                            f"{filename}:{i} uses print() instead of logging: {line.strip()}"
+                        )
 
 
 @pytest.mark.unit
@@ -120,7 +125,9 @@ class TestIndeedScraper:
 
         for salary_text, expected in test_cases:
             result = scraper.parse_salary(salary_text)
-            assert result == expected, f"Failed for {salary_text}: expected {expected}, got {result}"
+            assert (
+                result == expected
+            ), f"Failed for {salary_text}: expected {expected}, got {result}"
 
 
 @pytest.mark.unit
@@ -144,8 +151,9 @@ class TestReedScraper:
 
         for salary_text, expected in test_cases:
             result = reed_scraper.parse_salary(salary_text)
-            assert result == expected, f"Failed for {salary_text}: expected {expected}, got {result}"
-
+            assert (
+                result == expected
+            ), f"Failed for {salary_text}: expected {expected}, got {result}"
 
 
 @pytest.mark.integration
@@ -176,6 +184,7 @@ class TestScraperIntegration:
 
         if "posted_date" in job:
             from datetime import datetime
+
             assert isinstance(job["posted_date"], datetime)
 
     def test_reed_scrape_single_page(self, platform_configs):
@@ -222,8 +231,6 @@ class TestScraperIntegration:
         assert "url" in job
 
 
-
-
 @pytest.mark.integration
 @pytest.mark.skip(reason="Depends on integration tests")
 class TestJobDataStructure:
@@ -236,50 +243,74 @@ class TestJobDataStructure:
         for platform in ["indeed", "reed", "totaljobs", "stackoverflow"]:
             try:
                 scraper = get_scraper(platform, platform_configs[platform])
-                platform_jobs = list(scraper.scrape_jobs("software engineer", "London", max_pages=1))
-                jobs.extend([(platform, job) for job in platform_jobs[:3]])  # Up to 3 per platform
+                platform_jobs = list(
+                    scraper.scrape_jobs("software engineer", "London", max_pages=1)
+                )
+                jobs.extend(
+                    [(platform, job) for job in platform_jobs[:3]]
+                )  # Up to 3 per platform
             except Exception as e:
                 logger.warning(
                     "Failed to scrape from platform",
-                    extra={"platform": platform, "error": str(e)}
+                    extra={"platform": platform, "error": str(e)},
                 )
         return jobs
 
     def test_job_data_structure(self, sample_jobs):
         """Validate structure of all scraped jobs."""
-        assert len(sample_jobs) > 0, "Should have sample jobs from at least one platform"
+        assert (
+            len(sample_jobs) > 0
+        ), "Should have sample jobs from at least one platform"
 
         for platform, job in sample_jobs:
             logger.info("Validating job structure", extra={"platform": platform})
 
             # Required fields
-            assert isinstance(job.get("title"), str), f"[{platform}] title must be string"
-            assert isinstance(job.get("company"), str), f"[{platform}] company must be string"
+            assert isinstance(
+                job.get("title"), str
+            ), f"[{platform}] title must be string"
+            assert isinstance(
+                job.get("company"), str
+            ), f"[{platform}] company must be string"
             assert isinstance(job.get("url"), str), f"[{platform}] url must be string"
 
             # Optional fields with type validation
             if "location" in job and job["location"]:
-                assert isinstance(job["location"], str), f"[{platform}] location must be string"
+                assert isinstance(
+                    job["location"], str
+                ), f"[{platform}] location must be string"
 
             if "salary_text" in job:
-                assert isinstance(job["salary_text"], str), f"[{platform}] salary_text must be string"
+                assert isinstance(
+                    job["salary_text"], str
+                ), f"[{platform}] salary_text must be string"
 
             if "salary_min" in job and job["salary_min"]:
-                assert isinstance(job["salary_min"], (int, float)), f"[{platform}] salary_min must be numeric"
+                assert isinstance(
+                    job["salary_min"], (int, float)
+                ), f"[{platform}] salary_min must be numeric"
 
             if "salary_max" in job and job["salary_max"]:
-                assert isinstance(job["salary_max"], (int, float)), f"[{platform}] salary_max must be numeric"
+                assert isinstance(
+                    job["salary_max"], (int, float)
+                ), f"[{platform}] salary_max must be numeric"
 
             if "posted_date" in job and job["posted_date"]:
                 from datetime import datetime
-                assert isinstance(job["posted_date"], datetime), f"[{platform}] posted_date must be datetime"
+
+                assert isinstance(
+                    job["posted_date"], datetime
+                ), f"[{platform}] posted_date must be datetime"
 
     def test_remote_policy_extraction(self, sample_jobs):
         """Test that remote policy is correctly extracted when present."""
         for platform, job in sample_jobs:
             if job.get("remote_policy"):
-                assert job["remote_policy"] in ["fully-remote", "hybrid", "remote-option"], \
-                    f"[{platform}] Invalid remote_policy value: {job['remote_policy']}"
+                assert job["remote_policy"] in [
+                    "fully-remote",
+                    "hybrid",
+                    "remote-option",
+                ], f"[{platform}] Invalid remote_policy value: {job['remote_policy']}"
 
 
 @pytest.mark.unit
@@ -302,7 +333,9 @@ class TestErrorHandling:
             assert result is None
         except Exception as e:
             # Should log error, not raise
-            logger.info("Expected exception handled gracefully", extra={"error": str(e)})
+            logger.info(
+                "Expected exception handled gracefully", extra={"error": str(e)}
+            )
 
     def test_parse_invalid_html(self, platform_configs):
         """Test parsing invalid HTML."""
