@@ -369,5 +369,192 @@ class TestErrorHandling:
         assert len(jobs) == 0
 
 
+class TestBaseScraperMethods:
+    """Test BaseScraper utility methods."""
+
+    @pytest.fixture
+    def indeed_scraper(self, platform_configs):
+        """Create Indeed scraper instance."""
+        from src.discovery.platforms.indeed_scraper import IndeedScraper
+
+        return IndeedScraper("indeed", platform_configs["indeed"])
+
+    def test_parse_salary_empty_text(self, indeed_scraper):
+        """Test parse_salary with empty text."""
+        result = indeed_scraper.parse_salary("")
+        assert result["min"] is None
+        assert result["max"] is None
+
+    def test_parse_salary_single_number(self, indeed_scraper):
+        """Test parse_salary with single number."""
+        result = indeed_scraper.parse_salary("£50,000 a year")
+        assert result["min"] == 50000
+        assert result["max"] == 50000
+
+    def test_parse_salary_range(self, indeed_scraper):
+        """Test parse_salary with range."""
+        result = indeed_scraper.parse_salary("£40,000 - £60,000 a year")
+        assert result["min"] == 40000
+        assert result["max"] == 60000
+
+    def test_parse_salary_usd(self, indeed_scraper):
+        """Test parse_salary with USD."""
+        result = indeed_scraper.parse_salary("$70,000 - $90,000 a year")
+        assert result["currency"] == "USD"
+
+    def test_parse_salary_eur(self, indeed_scraper):
+        """Test parse_salary with EUR."""
+        result = indeed_scraper.parse_salary("€60,000 a year")
+        assert result["currency"] == "EUR"
+
+    def test_parse_posted_date_days(self, indeed_scraper):
+        """Test parse_posted_date with days."""
+        result = indeed_scraper.parse_posted_date("5 days ago")
+        assert result is not None
+
+    def test_parse_posted_date_weeks(self, indeed_scraper):
+        """Test parse_posted_date with weeks."""
+        result = indeed_scraper.parse_posted_date("2 weeks ago")
+        assert result is not None
+
+    def test_parse_posted_date_months(self, indeed_scraper):
+        """Test parse_posted_date with months."""
+        result = indeed_scraper.parse_posted_date("1 month ago")
+        assert result is not None
+
+    def test_parse_posted_date_hours(self, indeed_scraper):
+        """Test parse_posted_date with hours."""
+        result = indeed_scraper.parse_posted_date("12 hours ago")
+        assert result is not None
+
+    def test_parse_posted_date_invalid(self, indeed_scraper):
+        """Test parse_posted_date with invalid text."""
+        result = indeed_scraper.parse_posted_date("yesterday")
+        assert result is None
+
+
+class TestStackOverflowMethods:
+    """Test StackOverflow scraper methods."""
+
+    @pytest.fixture
+    def stackoverflow_scraper(self, platform_configs):
+        """Create StackOverflow scraper instance."""
+        from src.discovery.platforms.stackoverflow_scraper import StackOverflowScraper
+
+        return StackOverflowScraper("stackoverflow", platform_configs["stackoverflow"])
+
+    def test_build_search_url_basic(self, stackoverflow_scraper):
+        """Test build_search_url with basic query."""
+        url = stackoverflow_scraper.build_search_url("python developer", None, page=1)
+        assert "jobs" in url
+        assert "python" in url.lower()
+
+    def test_build_search_url_with_location(self, stackoverflow_scraper):
+        """Test build_search_url with location."""
+        url = stackoverflow_scraper.build_search_url(
+            "python developer", "London", page=1
+        )
+        assert "l=london" in url
+
+    def test_build_search_url_pagination(self, stackoverflow_scraper):
+        """Test build_search_url with pagination."""
+        url = stackoverflow_scraper.build_search_url("python", None, page=2)
+        assert "pg=3" in url
+
+
+class TestReedScraperMethods:
+    """Test Reed scraper methods for additional coverage."""
+
+    @pytest.fixture
+    def reed_scraper(self, platform_configs):
+        """Create Reed scraper instance."""
+        from src.discovery.platforms.reed_scraper import ReedScraper
+
+        return ReedScraper("reed", platform_configs["reed"])
+
+    def test_parse_contract_type_fixed_term(self, reed_scraper):
+        """Test _parse_contract_type with fixed term."""
+        result = reed_scraper._parse_contract_type("Fixed Term Contract")
+        assert result == "contract"
+
+    def test_parse_contract_type_part_time(self, reed_scraper):
+        """Test _parse_contract_type with part-time."""
+        result = reed_scraper._parse_contract_type("Part-Time")
+        assert result == "part-time"
+
+    def test_parse_contract_type_freelance(self, reed_scraper):
+        """Test _parse_contract_type with freelance."""
+        result = reed_scraper._parse_contract_type("Freelance")
+        assert result == "contract"
+
+    def test_is_remote_job_remote_in_title(self, reed_scraper):
+        """Test remote detection in title."""
+        assert reed_scraper._is_remote_job("Remote Python Developer", "London") is True
+
+    def test_is_remote_job_anywhere(self, reed_scraper):
+        """Test remote detection with anywhere."""
+        assert reed_scraper._is_remote_job("Developer", "Anywhere") is True
+
+    def test_platform_name(self, reed_scraper):
+        """Test get_platform_name."""
+        assert reed_scraper.get_platform_name() == "Reed"
+
+
+class TestIndeedScraperMethods:
+    """Test Indeed scraper methods for additional coverage."""
+
+    @pytest.fixture
+    def indeed_scraper(self, platform_configs):
+        """Create Indeed scraper instance."""
+        from src.discovery.platforms.indeed_scraper import IndeedScraper
+
+        return IndeedScraper("indeed", platform_configs["indeed"])
+
+    def test_is_remote_job_remote_in_title(self, indeed_scraper):
+        """Test remote detection in job title."""
+        assert (
+            indeed_scraper._is_remote_job("Remote Python Developer", "London") is True
+        )
+
+    def test_is_remote_job_anywhere_location(self, indeed_scraper):
+        """Test remote detection with anywhere in location."""
+        assert (
+            indeed_scraper._is_remote_job("Python Developer", "Work from Anywhere")
+            is True
+        )
+
+    def test_platform_name(self, indeed_scraper):
+        """Test get_platform_name."""
+        assert indeed_scraper.get_platform_name() == "Indeed"
+
+    def test_build_job_url(self, indeed_scraper):
+        """Test _build_job_url method."""
+        url = indeed_scraper._build_job_url("abc123")
+        assert "indeed.com" in url
+        assert "abc123" in url
+
+    def test_calculate_posted_date(self, indeed_scraper):
+        """Test calculate_posted_date method."""
+        result = indeed_scraper.calculate_posted_date(5)
+        assert result is not None
+        assert "-" in result  # Date format is YYYY-MM-DD
+
+
+class TestTotaljobsScraperMethods:
+    """Test Totaljobs scraper methods for additional coverage."""
+
+    @pytest.fixture
+    def totaljobs_scraper(self, platform_configs):
+        """Create Totaljobs scraper instance."""
+        from src.discovery.platforms.totaljobs_scraper import TotaljobsScraper
+
+        return TotaljobsScraper("totaljobs", platform_configs["totaljobs"])
+
+    def test_platform_name(self, totaljobs_scraper):
+        """Test get_platform_name."""
+        name = totaljobs_scraper.get_platform_name()
+        assert "totaljobs" in name.lower()
+
+
 if __name__ == "__main__":
     print("Run with: pytest tests/test_scrapers.py -v")
