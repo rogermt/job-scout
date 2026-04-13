@@ -15,8 +15,8 @@ print("=" * 70)
 # Test 1: Module Imports
 print("\n[Test 1] Module Imports...")
 try:
-    from job_discovery import list_scrapers, get_scraper
-    from job_discovery.job_matching import JobMatcher, JobPreferences
+    from src.discovery.platforms import list_scrapers, get_scraper
+    from src.discovery.platforms.job_matching import JobMatcher, JobPreferences
 
     print("✅ All imports successful")
 except Exception as e:
@@ -148,7 +148,7 @@ except Exception as e:
 # Test 4: Salary Parser
 print("\n[Test 4] UK Salary Parser...")
 try:
-    from job_discovery.base_scraper import BaseScraper
+    from src.discovery.platforms.base_scraper import BaseScraper
 
     test_salaries = [
         "£30,000 - £50,000",

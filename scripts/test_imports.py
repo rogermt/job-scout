@@ -16,15 +16,15 @@ try:
 
     # Test that we can import job_discovery modules without errors
 
-    print("✓ Successfully imported from job_discovery.base_scraper")
+    print("✓ Successfully imported from src.discovery.platforms.base_scraper")
 
-    print("✓ Successfully imported from job_discovery.indeed_scraper")
+    print("✓ Successfully imported from src.discovery.platforms.indeed_scraper")
 
-    print("✓ Successfully imported from job_discovery.reed_scraper")
+    print("✓ Successfully imported from src.discovery.platforms.reed_scraper")
 
-    print("✓ Successfully imported from job_discovery.totaljobs_scraper")
+    print("✓ Successfully imported from src.discovery.platforms.totaljobs_scraper")
 
-    print("✓ Successfully imported from job_discovery.stackoverflow_scraper")
+    print("✓ Successfully imported from src.discovery.platforms.stackoverflow_scraper")
 
     # Test config manager
 

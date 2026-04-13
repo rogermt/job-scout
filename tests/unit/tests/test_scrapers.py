@@ -8,7 +8,7 @@ from src.discovery.platforms import (
     StackOverflowScraper,
     IndeedScraper,
 )
-from hermes_agent.gateway.config import PlatformConfig
+from src.config_manager import PlatformConfig
 
 
 def test_scraper_initialization():

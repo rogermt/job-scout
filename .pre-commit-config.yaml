@@ -32,7 +32,7 @@ repos:
     hooks:
       - id: mypy
         language_version: python3.11
-        additional_dependencies: [pydantic, sqlalchemy]
+        additional_dependencies: [pydantic, sqlalchemy, beautifulsoup4, requests, python-dateutil, pydantic-settings, email-validator]
 
   - repo: local
     hooks:

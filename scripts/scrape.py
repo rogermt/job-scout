@@ -13,7 +13,7 @@ from rich.console import Console
 from rich.table import Table
 
 from config_manager import get_settings
-from job_discovery.base_scraper import get_scraper, list_scrapers
+from src.discovery.platforms.base_scraper import get_scraper, list_scrapers  # type: ignore[attr-defined]
 from logging_config import setup_logging
 from tracking.database import init_database
 
