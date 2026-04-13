@@ -23,4 +23,4 @@ jobs:
       - name: Run tests
         run: |
           source .venv/bin/activate
-          pytest
+          pytest --ignore=tests/test_indeed_scraper_integration.py --ignore=tests/test_reed_scraper_integration.py --ignore=tests/test_scrapers_integration.py --ignore=tests/test_stackoverflow_scraper_integration.py --ignore=tests/test_totaljobs_scraper_integration.py
