@@ -15,9 +15,10 @@ license = {text = "MIT"}
 test = ["pytest>=7.0.0", "pytest-cov>=4.0.0"]
 lint = ["ruff>=0.1.0", "black>=23.0.0", "mypy>=1.0.0"]
 
-[tool.setuptools]
-[tool.setuptools.packages.find]
-where = ["src"]
+[tool.pytest.ini_options]
+testpaths = ["tests/integration/test_job_matching.py"]
+python_files = ["test_*.py"]
+pythonpath = ["src"]
 
 [tool.ruff]
 line-length = 88
