@@ -29,7 +29,7 @@ class StackOverflowScraper(BaseScraper):
         """Build search URL with parameters."""
         base_url = "https://stackoverflow.com/jobs"
         loc = location.replace(" ", "-").lower() if location else ""
-        params = f"?q={query.replace(' ', '+').lower()}&l={loc}"
+        params = f"q={query.replace(' ', '+').lower()}&l={loc}"
         if page := kwargs.get("page", 0):
             params += f"&pg={page + 1}"
         return f"{base_url}?{params}"
