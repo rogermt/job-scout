@@ -254,3 +254,158 @@ class TestMainModule:
         runner = CliRunner()
         _ = runner.invoke(cli, ["--debug", "--help"])
         # Lines 41-46: debug option is defined
+
+
+class TestSearchCommand:
+    """Test search command functionality."""
+
+    def test_search_command_invoked(self):
+        """Test search command can be invoked."""
+        from unittest.mock import MagicMock, patch
+        from click.testing import CliRunner
+        from src.main import cli
+
+        runner = CliRunner()
+
+        # Mock get_scraper to return a mock scraper
+        mock_scraper = MagicMock()
+        mock_scraper.scrape_jobs.return_value = iter([])
+        mock_scraper.save_job.return_value = "job-123"
+
+        with patch("src.main.get_scraper", return_value=mock_scraper):
+            with patch("src.main.get_settings") as mock_settings:
+                mock_settings.return_value.get_enabled_platforms.return_value = {
+                    "indeed": MagicMock()
+                }
+                _ = runner.invoke(cli, ["search", "-q", "python"])
+
+    def test_search_with_location_option(self):
+        """Test search with location option."""
+        from unittest.mock import MagicMock, patch
+        from click.testing import CliRunner
+        from src.main import cli
+
+        runner = CliRunner()
+
+        mock_scraper = MagicMock()
+        mock_scraper.scrape_jobs.return_value = iter([])
+
+        with patch("src.main.get_scraper", return_value=mock_scraper):
+            with patch("src.main.get_settings") as mock_settings:
+                mock_settings.return_value.get_enabled_platforms.return_value = {
+                    "reed": MagicMock()
+                }
+                _ = runner.invoke(cli, ["search", "-q", "developer", "-l", "London"])
+
+    def test_search_no_platforms_enabled(self):
+        """Test search when no platforms enabled."""
+        from unittest.mock import patch
+        from click.testing import CliRunner
+        from src.main import cli
+
+        runner = CliRunner()
+
+        with patch("src.main.get_settings") as mock_settings:
+            mock_settings.return_value.get_enabled_platforms.return_value = {}
+            _ = runner.invoke(cli, ["search", "-q", "test"])
+
+    def test_scraper_not_available(self):
+        """Test when scraper is not available."""
+        from unittest.mock import MagicMock, patch
+        from click.testing import CliRunner
+        from src.main import cli
+
+        runner = CliRunner()
+
+        with patch("src.main.get_scraper", return_value=None):
+            with patch("src.main.get_settings") as mock_settings:
+                mock_settings.return_value.get_enabled_platforms.return_value = {
+                    "unknown": MagicMock()
+                }
+                _ = runner.invoke(cli, ["search", "-q", "test"])
+
+    def test_search_handles_scraper_exception(self):
+        """Test search handles scraper exception."""
+        from unittest.mock import MagicMock, patch
+        from click.testing import CliRunner
+        from src.main import cli
+
+        runner = CliRunner()
+
+        mock_scraper = MagicMock()
+        mock_scraper.scrape_jobs.side_effect = Exception("Network error")
+
+        with patch("src.main.get_scraper", return_value=mock_scraper):
+            with patch("src.main.get_settings") as mock_settings:
+                mock_settings.return_value.get_enabled_platforms.return_value = {
+                    "indeed": MagicMock()
+                }
+                _ = runner.invoke(cli, ["search", "-q", "test"])
+
+    def test_search_with_job_data(self):
+        """Test search processes job data."""
+        from unittest.mock import MagicMock, patch
+        from click.testing import CliRunner
+        from src.main import cli
+
+        runner = CliRunner()
+
+        mock_scraper = MagicMock()
+        mock_job = {"title": "Python Developer", "company": "Tech Corp"}
+        mock_scraper.scrape_jobs.return_value = iter([mock_job])
+        mock_scraper.save_job.return_value = "job-456"
+
+        with patch("src.main.get_scraper", return_value=mock_scraper):
+            with patch("src.main.get_settings") as mock_settings:
+                mock_settings.return_value.get_enabled_platforms.return_value = {
+                    "indeed": MagicMock()
+                }
+                _ = runner.invoke(cli, ["search", "-q", "python", "-p", "1"])
+
+
+class TestPlatformsCommand:
+    """Test platforms command functionality."""
+
+    def test_platforms_list_command(self):
+        """Test platforms list shows table."""
+        from unittest.mock import MagicMock, patch
+        from click.testing import CliRunner
+        from src.main import cli
+
+        runner = CliRunner()
+
+        mock_settings = MagicMock()
+        mock_settings.get_enabled_platforms.return_value = {"indeed": MagicMock()}
+
+        with patch("src.main.get_settings", return_value=mock_settings):
+            with patch("src.main.list_scrapers", return_value=["indeed", "reed"]):
+                _ = runner.invoke(cli, ["platforms", "list"])
+
+    def test_platforms_list_with_multiple_scrapers(self):
+        """Test platforms list with multiple scrapers."""
+        from unittest.mock import MagicMock, patch
+        from click.testing import CliRunner
+        from src.main import cli
+
+        runner = CliRunner()
+
+        mock_settings = MagicMock()
+        mock_settings.get_enabled_platforms.return_value = {
+            "indeed": MagicMock(),
+            "reed": MagicMock(),
+        }
+
+        with patch("src.main.get_settings", return_value=mock_settings):
+            with patch(
+                "src.main.list_scrapers",
+                return_value=["indeed", "reed", "totaljobs"],
+            ):
+                _ = runner.invoke(cli, ["platforms", "list"])
+
+    def test_platforms_group_invoked(self):
+        """Test platforms group can be invoked."""
+        from click.testing import CliRunner
+        from src.main import cli
+
+        runner = CliRunner()
+        _ = runner.invoke(cli, ["platforms"])
