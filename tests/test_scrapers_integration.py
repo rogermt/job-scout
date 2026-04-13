@@ -320,7 +320,7 @@ class TestErrorHandling:
     def test_invalid_platform(self):
         """Test error when requesting invalid platform."""
         config = PlatformConfig()
-        with pytest.raises(KeyError):
+        with pytest.raises(ValueError):
             get_scraper("invalid_platform", config)
 
     def test_invalid_search_url_handling(self, platform_configs):

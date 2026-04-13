@@ -173,6 +173,8 @@ class ReedScraper(BaseScraper):
             return "contract"
         if "temporary" in lower:
             return "temporary"
+        if "part" in lower:
+            return "part-time"
         if "freelance" in lower or "contractor" in lower:
             return "contract"
         return None
