@@ -12,9 +12,11 @@ _scrapers: Dict[str, Type[Any]] = {
     "indeed": IndeedScraper,
 }
 
+
 def list_scrapers() -> list[str]:
     """List all available scrapers."""
     return list(_scrapers.keys())
+
 
 def get_scraper(name: str, config: Dict[str, Any]) -> Any:
     """Get a scraper instance by name."""

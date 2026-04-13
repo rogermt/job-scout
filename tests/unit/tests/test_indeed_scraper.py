@@ -1,11 +1,14 @@
-
 import sys
+
 sys.path.append("/teamspace/studios/this_studio/job-scout/tests/mocks")
 
 from hermes_agent.gateway.config import PlatformConfig
 from src.discovery.platforms.indeed_scraper import IndeedScraper
 
+
 def test_indeed_scraper_initialization():
-    scraper = IndeedScraper(platform_name="indeed", config=PlatformConfig(), rate_limit=10)
+    scraper = IndeedScraper(
+        platform_name="indeed", config=PlatformConfig(), rate_limit=10
+    )
     assert scraper.platform_name == "indeed"
     assert scraper.rate_limit == 10

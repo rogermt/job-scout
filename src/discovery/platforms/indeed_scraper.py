@@ -1,23 +1,143 @@
+"""Indeed job scraper implementation."""
 
-from typing import Optional, Generator, Any, Dict
-from hermes_agent.gateway.config import PlatformConfig
+import re
+from typing import Any, Optional
+
+from bs4 import BeautifulSoup, Tag
+
+from src.config_manager import PlatformConfig
 from .base_scraper import BaseScraper
 
+
 class IndeedScraper(BaseScraper):
-    def __init__(self, platform_name: str, config: PlatformConfig, rate_limit: Optional[int] = None):
+    """Scraper for Indeed job postings."""
+
+    base_url = "https://uk.indeed.com"
+    jobs_per_page = 20
+
+    def __init__(
+        self, platform_name: str, config: PlatformConfig, rate_limit: int = 5
+    ) -> None:
+        """Initialize the Indeed scraper."""
         super().__init__(platform_name, config, rate_limit)
 
-    def _generate_id(self) -> str:
-        return "indeed_" + str(hash(self.platform_name))
+    def get_platform_name(self) -> str:
+        """Get display name for platform."""
+        return "Indeed"
 
-    def parse_salary(self, salary_str: str) -> Optional[float]:
+    def build_search_url(
+        self, query: str, location: Optional[str] = None, **kwargs: Any
+    ) -> str:
+        """Build search URL with parameters."""
+        base_url = "https://uk.indeed.com/jobs"
+        params = f"?sort=date&q={query.replace(' ', '+')}"
+        if location:
+            params += f"&l={location}"
+        if page := kwargs.get("page", 0):
+            params += f"&start={page * 10}"
+        return f"{base_url}{params}"
+
+    def get_search_url(
+        self, query: str, location: Optional[str] = None, **kwargs: Any
+    ) -> str:
+        """Get search URL (delegates to build_search_url)."""
+        return self.build_search_url(query, location, **kwargs)
+
+    def extract_job_listings(self, soup: BeautifulSoup) -> list[Tag]:
+        """Extract job listing elements from search results."""
+        return soup.select(".job_seen_beacon, .jobsearch-SerpJobCard, .job-card")
+
+    def parse_job_listing(self, element: Tag) -> Optional[dict[str, Any]]:
+        """Parse a single job listing element."""
+        job_id = element.get("data-jk") or element.get("id", "")
+        title_elem = element.select_one("h2 a, .jobTitle a")
+        title = title_elem.get_text(strip=True) if title_elem else "Unknown"
+        company_elem = element.select_one(".companyName, .company")
+        company = company_elem.get_text(strip=True) if company_elem else ""
+        location_elem = element.select_one(".companyLocation, .location")
+        location_text = location_elem.get_text(strip=True) if location_elem else ""
+        salary_elem = element.select_one(".salaryText, .salary")
+        salary_text = salary_elem.get_text(strip=True) if salary_elem else ""
+        return {
+            "platform_id": job_id or "",
+            "title": title,
+            "company": company,
+            "location": {"original": location_text},
+            "salary": self._parse_salary(salary_text),
+            "contract_type": None,
+        }
+
+    def get_job_details(self, job_url: str) -> Optional[dict[str, Any]]:
+        """Fetch and parse detailed job information."""
+        soup = self.fetch_page(job_url)
+        if not soup:
+            return None
+        return {}
+
+    def parse_salary(self, salary_text: str) -> dict[str, Any]:
+        """Parse salary text into min, max, and currency."""
+        return self._parse_salary(salary_text)
+
+    def _parse_salary(self, salary_text: str) -> dict[str, Any]:
+        """Parse salary text into min, max, and currency."""
+        if not salary_text:
+            return {"min": None, "max": None, "currency": None, "period": None}
+        currency = "USD"
+        if "£" in salary_text:
+            currency = "GBP"
+        elif "€" in salary_text:
+            currency = "EUR"
+        period = "yearly"
+        if "per day" in salary_text.lower() or "/day" in salary_text.lower():
+            period = "daily"
+        elif "per month" in salary_text.lower() or "/month" in salary_text.lower():
+            period = "monthly"
+        elif "hour" in salary_text.lower() or "/hour" in salary_text.lower():
+            period = "hourly"
+        text = (
+            salary_text.replace(",", "")
+            .replace("£", "")
+            .replace("$", "")
+            .replace("€", "")
+        )
+        numbers = re.findall(r"(\d+(?:\.\d+)?)", text)
+        if numbers:
+            min_sal = float(numbers[0])
+            max_sal = float(numbers[-1]) if len(numbers) > 1 else min_sal
+            return {
+                "min": min_sal,
+                "max": max_sal,
+                "currency": currency,
+                "period": period,
+            }
+        return {"min": None, "max": None, "currency": currency, "period": period}
+
+    def _is_remote_job(self, title: str, location: str) -> bool:
+        """Check if job is remote based on title and location."""
+        title_lower = title.lower()
+        location_lower = location.lower()
+        if "remote" in title_lower or "work from home" in title_lower:
+            return True
+        if "anywhere" in location_lower:
+            return True
+        return False
+
+    def _parse_contract_type(self, contract_type: str) -> Optional[str]:
+        """Parse contract type string."""
+        if not contract_type:
+            return None
+        lower = contract_type.lower()
+        if "permanent" in lower:
+            return "permanent"
+        if "contract" in lower:
+            return "contract"
+        if "temporary" in lower:
+            return "temporary"
         return None
 
-    def parse_posted_date(self, date_str: str) -> Optional[str]:
-        return None
+    def calculate_posted_date(self, days_ago: int) -> str:
+        """Calculate posted date based on days ago."""
+        from datetime import datetime, timedelta
 
-    def fetch_page(self, url: str) -> str:
-        return ""
-
-    def scrape_jobs(self, query: str, location: Optional[str] = None, max_pages: int = 1) -> Generator[Dict[str, Any], None, None]:
-        yield {"id": str(hash(query)), "title": query, "location": location or "UK"}
+        date = datetime.now() - timedelta(days=days_ago)
+        return date.strftime("%Y-%m-%d")

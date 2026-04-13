@@ -17,7 +17,7 @@ class TestStackOverflowScraper:
     @pytest.fixture
     def scraper(self) -> StackOverflowScraper:
         """Provide test instance."""
-        return StackOverflowScraper()
+        return StackOverflowScraper("stackoverflow", Mock())
 
     @pytest.fixture
     def mock_html(self):

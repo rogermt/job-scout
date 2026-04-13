@@ -42,18 +42,22 @@ def test_import_scraper_module():
     try:
         # Test base scraper
         from src.discovery.platforms.base_scraper import BaseScraper
+
         logger.info(f"{GREEN}✓ BaseScraper imported{RESET}")
 
         # Test scraper registry
         from src.discovery.platforms import list_scrapers, get_scraper
+
         logger.info(f"{GREEN}✓ Scraper registry imported{RESET}")
 
         # Test config
         from src.config_manager import PlatformConfig
+
         logger.info(f"{GREEN}✓ PlatformConfig imported{RESET}")
 
         # Test individual scrapers
         from src.discovery.platforms.indeed_scraper import IndeedScraper
+
         logger.info(f"{GREEN}✓ IndeedScraper imported{RESET}")
 
         return True

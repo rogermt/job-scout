@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Phase 2 Integration Test - UK Job Discovery
 Test all 4 UK scrapers plus job matching algorithm"""
+
 import sys
 from pathlib import Path
 
@@ -21,6 +22,7 @@ try:
 except Exception as e:
     print(f"❌ Import failed: {e}")
     import traceback
+
     traceback.print_exc()
     sys.exit(1)
 
@@ -37,6 +39,7 @@ try:
 except Exception as e:
     print(f"❌ Registry test failed: {e}")
     import traceback
+
     traceback.print_exc()
 
 # Test 3: Job Matching
@@ -139,6 +142,7 @@ try:
 except Exception as e:
     print(f"❌ Job matching test failed: {e}")
     import traceback
+
     traceback.print_exc()
 
 # Test 4: Salary Parser
@@ -182,6 +186,7 @@ try:
 except Exception as e:
     print(f"❌ Salary parser test failed: {e}")
     import traceback
+
     traceback.print_exc()
 
 # Final Summary

@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+
 @dataclass
 class JobPreferences:
     target_roles: list[str]
@@ -8,6 +9,7 @@ class JobPreferences:
     preferred_location: str
     preferred_contract_type: str
     preferred_remote_policy: str
+
 
 class JobMatcher:
     def __init__(self, prefs: JobPreferences):

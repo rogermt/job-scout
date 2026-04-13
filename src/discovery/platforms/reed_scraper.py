@@ -1,14 +1,185 @@
+"""Reed job scraper implementation."""
 
-from typing import Optional, Generator, Any, Dict
-from hermes_agent.gateway.config import PlatformConfig
+import re
+from typing import Any, Optional
+
+from bs4 import BeautifulSoup, Tag
+
+from src.config_manager import PlatformConfig
 from .base_scraper import BaseScraper
 
+
 class ReedScraper(BaseScraper):
-    def __init__(self, platform_name: str, config: PlatformConfig):
-        super().__init__(platform_name, config)
+    """Scraper for Reed job postings."""
 
-    def _generate_id(self) -> str:
-        return "reed_" + str(hash(self.platform_name))
+    base_url = "https://www.reed.co.uk"
+    jobs_per_page = 20
 
-    def scrape_jobs(self, query: str, location: Optional[str] = None, max_pages: int = 1) -> Generator[Dict[str, Any], None, None]:
-        yield {"id": str(hash(query)), "title": query, "location": location or "UK"}
+    def __init__(
+        self, platform_name: str, config: PlatformConfig, rate_limit: int = 5
+    ) -> None:
+        """Initialize the Reed scraper."""
+        super().__init__(platform_name, config, rate_limit)
+
+    def get_platform_name(self) -> str:
+        """Get display name for platform."""
+        return "Reed"
+
+    def build_search_url(
+        self, query: str, location: Optional[str] = None, **kwargs: Any
+    ) -> str:
+        """Build search URL with parameters."""
+        base_url = "https://www.reed.co.uk/jobs"
+        params = f"?keywords={query.replace(" ", "+")}"
+        if location:
+            params += f"&location={location}"
+        if page := kwargs.get("page", 0):
+            params += f"&page={page}"
+        return f"{base_url}{params}"
+
+    def get_search_url(
+        self, query: str, location: Optional[str] = None, **kwargs: Any
+    ) -> str:
+        """Get search URL (delegates to build_search_url)."""
+        return self.build_search_url(query, location, **kwargs)
+
+    def extract_job_listings(self, soup: BeautifulSoup) -> list[Tag]:
+        """Extract job listing elements from search results."""
+        return soup.select("article.job-result, article.job-card")
+
+    def parse_job_listing(self, element: Tag) -> Optional[dict[str, Any]]:
+        """Parse a single job listing element."""
+        # Try to get job ID from various sources
+        job_id = (
+            element.get("data-job-id") or element.get("data-id") or element.get("id")
+        )
+
+        # Get title
+        title_elem = element.select_one(
+            "h3.job-result-heading__title a, h2 a, .job-title a"
+        )
+        title = title_elem.get_text(strip=True) if title_elem else "Unknown"
+
+        # Get company
+        company_elem = element.select_one("a.job-result-heading__employer, .company")
+        company = company_elem.get_text(strip=True) if company_elem else ""
+
+        # Get location
+        location_elem = element.select_one("li.job-result-heading__meta, .location")
+        location_text = location_elem.get_text(strip=True) if location_elem else ""
+        location = {"original": location_text}
+
+        # Get salary
+        salary_elem = element.select_one("li.job-result-heading__salary, .salary")
+        salary_text = salary_elem.get_text(strip=True) if salary_elem else ""
+        salary = self._parse_salary(salary_text)
+
+        # Get contract type
+        type_elem = element.select_one("li.job-result-heading__type, .type")
+        type_text = type_elem.get_text(strip=True) if type_elem else ""
+        contract_type = self._parse_contract_type(type_text)
+
+        return {
+            "platform_id": job_id or "",
+            "title": title,
+            "company": company,
+            "location": location,
+            "salary": salary,
+            "contract_type": contract_type,
+        }
+
+    def get_job_details(self, job_url: str) -> Optional[dict[str, Any]]:
+        """Fetch and parse detailed job information."""
+        soup = self.fetch_page(job_url)
+        if not soup:
+            return None
+        return {}
+
+    def parse_salary(self, salary_text: str) -> dict[str, Any]:
+        """Parse salary text into min, max, and currency."""
+        return self._parse_salary(salary_text)
+
+    def _parse_salary(self, salary_text: str) -> dict[str, Any]:
+        """Parse salary text into min, max, and currency."""
+        if not salary_text:
+            return {"min": None, "max": None, "currency": None, "period": None}
+        currency = "GBP"
+        if "$" in salary_text:
+            currency = "USD"
+        elif "€" in salary_text:
+            currency = "EUR"
+
+        # Determine period
+        period = "yearly"
+        if "per day" in salary_text.lower() or "/day" in salary_text.lower():
+            period = "daily"
+        elif "per month" in salary_text.lower() or "/month" in salary_text.lower():
+            period = "monthly"
+        elif "hour" in salary_text.lower() or "/hour" in salary_text.lower():
+            period = "hourly"
+
+        text = (
+            salary_text.replace(",", "")
+            .replace("£", "")
+            .replace("$", "")
+            .replace("€", "")
+        )
+        numbers = re.findall(r"(\d+(?:\.\d+)?)", text)
+        if numbers:
+            min_sal = float(numbers[0])
+            max_sal = float(numbers[-1]) if len(numbers) > 1 else min_sal
+            return {
+                "min": min_sal,
+                "max": max_sal,
+                "currency": currency,
+                "period": period,
+            }
+        return {"min": None, "max": None, "currency": currency, "period": period}
+
+    def parse_posted_date(self, text: str) -> Optional[str]:
+        """Parse posted date text into date string."""
+        return text
+
+    def _parse_posted_date(self, text: str) -> Optional[str]:
+        """Parse posted date text into date string."""
+        match = re.search(r"(\d+)\s+days?\s+ago", text, re.IGNORECASE)
+        if match:
+            days = int(match.group(1))
+            return self.calculate_posted_date(days)
+        return None
+
+    def is_remote_job(self, element: Tag) -> bool:
+        """Check if job is remote."""
+        return self._is_remote_job(element.get_text(strip=True), "")
+
+    def _is_remote_job(self, title: str, location: str) -> bool:
+        """Check if job is remote based on title and location."""
+        title_lower = title.lower()
+        location_lower = location.lower()
+        if "remote" in title_lower or "work from home" in title_lower:
+            return True
+        if "anywhere" in location_lower or "uk" in location_lower:
+            return True
+        return False
+
+    def _parse_contract_type(self, contract_type: str) -> Optional[str]:
+        """Parse contract type string."""
+        if not contract_type:
+            return None
+        lower = contract_type.lower()
+        if "permanent" in lower:
+            return "permanent"
+        if "fixed term" in lower or "contract" in lower:
+            return "contract"
+        if "temporary" in lower:
+            return "temporary"
+        if "freelance" in lower or "contractor" in lower:
+            return "contract"
+        return None
+
+    def calculate_posted_date(self, days_ago: int) -> str:
+        """Calculate posted date based on days ago."""
+        from datetime import datetime, timedelta
+
+        date = datetime.now() - timedelta(days=days_ago)
+        return date.strftime("%Y-%m-%d")

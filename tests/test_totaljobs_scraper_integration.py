@@ -21,7 +21,7 @@ class TestInit:
         mock_config = Mock()
         mock_config.enabled = True
 
-        scraper = TotaljobsScraper(mock_config)
+        scraper = TotaljobsScraper("totaljobs", mock_config)
 
         assert scraper.base_url == "https://www.totaljobs.com"
         assert scraper.jobs_per_page == 20
@@ -36,7 +36,7 @@ class TestBuildSearchUrl:
         """Fixture for scraper instance."""
         mock_config = Mock()
         mock_config.enabled = True
-        return TotaljobsScraper(mock_config)
+        return TotaljobsScraper("totaljobs", mock_config)
 
     def test_build_search_url_basic(self, scraper: TotaljobsScraper) -> None:
         """Test basic URL generation without location."""
@@ -71,7 +71,7 @@ class TestGetSearchUrl:
         """Fixture for scraper instance."""
         mock_config = Mock()
         mock_config.enabled = True
-        return TotaljobsScraper(mock_config)
+        return TotaljobsScraper("totaljobs", mock_config)
 
     def test_get_search_url_delegates_to_build(self, scraper: TotaljobsScraper) -> None:
         """Test that get_search_url delegates to build_search_url."""
@@ -88,7 +88,7 @@ class TestExtractJobListings:
         """Fixture for scraper instance."""
         mock_config = Mock()
         mock_config.enabled = True
-        return TotaljobsScraper(mock_config)
+        return TotaljobsScraper("totaljobs", mock_config)
 
     def test_extract_job_listings_finds_items(self, scraper: TotaljobsScraper) -> None:
         """Test extraction of job items."""
@@ -116,7 +116,7 @@ class TestParseJobListing:
         """Fixture for scraper instance."""
         mock_config = Mock()
         mock_config.enabled = True
-        return TotaljobsScraper(mock_config)
+        return TotaljobsScraper("totaljobs", mock_config)
 
     def test_parse_job_listing_complete_card(self, scraper: TotaljobsScraper) -> None:
         """Test parsing a complete job card."""
@@ -166,7 +166,7 @@ class TestParseSalary:
         """Fixture for scraper instance."""
         mock_config = Mock()
         mock_config.enabled = True
-        return TotaljobsScraper(mock_config)
+        return TotaljobsScraper("totaljobs", mock_config)
 
     def test_parse_salary_range(self, scraper: TotaljobsScraper) -> None:
         """Test parsing salary range."""
@@ -209,7 +209,7 @@ class TestOtherMethods:
         """Fixture for scraper instance."""
         mock_config = Mock()
         mock_config.enabled = True
-        return TotaljobsScraper(mock_config)
+        return TotaljobsScraper("totaljobs", mock_config)
 
     def test_parse_contract_type(self, scraper: TotaljobsScraper) -> None:
         """Test contract type parsing."""
@@ -253,7 +253,7 @@ class TestGetJobDetails:
         """Fixture for scraper instance."""
         mock_config = Mock()
         mock_config.enabled = True
-        return TotaljobsScraper(mock_config)
+        return TotaljobsScraper("totaljobs", mock_config)
 
     def test_get_job_details_delegates(self, scraper: TotaljobsScraper) -> None:
         """Test that get_job_details delegates to scrape_job_details."""

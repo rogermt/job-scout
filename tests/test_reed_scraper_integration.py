@@ -20,7 +20,7 @@ class TestInit:
         mock_config = Mock()
         mock_config.enabled = True
 
-        scraper = ReedScraper(mock_config)
+        scraper = ReedScraper("reed", mock_config)
 
         assert scraper.base_url == "https://www.reed.co.uk"
         assert scraper.jobs_per_page == 20
@@ -35,7 +35,7 @@ class TestBuildSearchUrl:
         """Fixture for scraper instance."""
         mock_config = Mock()
         mock_config.enabled = True
-        return ReedScraper(mock_config)
+        return ReedScraper("reed", mock_config)
 
     def test_build_search_url_basic(self, scraper: ReedScraper) -> None:
         """Test basic URL generation without location."""
@@ -75,7 +75,7 @@ class TestGetSearchUrl:
         """Fixture for scraper instance."""
         mock_config = Mock()
         mock_config.enabled = True
-        return ReedScraper(mock_config)
+        return ReedScraper("reed", mock_config)
 
     def test_get_search_url_delegates_to_build(self, scraper: ReedScraper) -> None:
         """Test that get_search_url delegates to build_search_url."""
@@ -93,7 +93,7 @@ class TestExtractJobListings:
         """Fixture for scraper instance."""
         mock_config = Mock()
         mock_config.enabled = True
-        return ReedScraper(mock_config)
+        return ReedScraper("reed", mock_config)
 
     def test_extract_job_listings_finds_articles(self, scraper: ReedScraper) -> None:
         """Test extraction of job result articles."""
@@ -121,7 +121,7 @@ class TestParseJobListing:
         """Fixture for scraper instance."""
         mock_config = Mock()
         mock_config.enabled = True
-        return ReedScraper(mock_config)
+        return ReedScraper("reed", mock_config)
 
     def test_parse_job_listing_complete_card(self, scraper: ReedScraper) -> None:
         """Test parsing a complete job card."""
@@ -193,7 +193,7 @@ class TestParseSalary:
         """Fixture for scraper instance."""
         mock_config = Mock()
         mock_config.enabled = True
-        return ReedScraper(mock_config)
+        return ReedScraper("reed", mock_config)
 
     def test_parse_salary_range(self, scraper: ReedScraper) -> None:
         """Test parsing salary range."""
@@ -236,7 +236,7 @@ class TestOtherMethods:
         """Fixture for scraper instance."""
         mock_config = Mock()
         mock_config.enabled = True
-        return ReedScraper(mock_config)
+        return ReedScraper("reed", mock_config)
 
     def test_parse_contract_type(self, scraper: ReedScraper) -> None:
         """Test contract type parsing."""
@@ -266,9 +266,9 @@ class TestScrapeJobDetails:
         """Fixture for scraper instance."""
         mock_config = Mock()
         mock_config.enabled = True
-        return ReedScraper(mock_config)
+        return ReedScraper("reed", mock_config)
 
-    @patch("src.job_discovery.reed_scraper.ReedScraper._fetch_page")
+    @patch("src.discovery.platforms.reed_scraper.ReedScraper.fetch_page")
     def test_get_job_details_success(self, mock_fetch, scraper: ReedScraper) -> None:
         """Test successful job details fetching."""
         mock_fetch.return_value = """

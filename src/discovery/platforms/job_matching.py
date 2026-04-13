@@ -19,7 +19,7 @@ logger = None  # Will be set by _init_logger()
 def _init_logger():
     global logger
     if logger is None:
-        from ..logging_config import get_logger
+        from src.logging_config import get_logger
 
         logger = get_logger(__name__)
     return logger
@@ -27,14 +27,14 @@ def _init_logger():
 
 def get_settings():
     """Get configuration settings (lazy import to avoid circular imports)."""
-    from ..config_manager import get_settings
+    from src.config_manager import get_settings
 
     return get_settings()
 
 
 def get_job_preferences():
     """Get job preferences (lazy import to avoid circular imports)."""
-    from ..config_manager import JobPreferences
+    from src.config_manager import JobPreferences
 
     return JobPreferences
 
@@ -144,18 +144,22 @@ class JobMatcher:
         score = min(score, 100.0)
 
         # Determine if job passes threshold
-        matches = score >= (self.preferences.get("min_score_threshold", 40.0) if self.preferences is not None and hasattr(self.preferences, "get") else 40.0)
+        matches = score >= (
+            self.preferences.get("min_score_threshold", 40.0)
+            if self.preferences is not None and hasattr(self.preferences, "get")
+            else 40.0
+        )
 
         if matches:
             if logger is not None:
                 logger.debug(
-                "Job matched preferences",
-                extra={
-                    "job_id": job_data.get("id"),
-                    "title": job_data.get("title"),
-                    "score": round(score, 2),
-                },
-            )
+                    "Job matched preferences",
+                    extra={
+                        "job_id": job_data.get("id"),
+                        "title": job_data.get("title"),
+                        "score": round(score, 2),
+                    },
+                )
 
         return matches, score, reasons
 
@@ -184,9 +188,12 @@ class JobMatcher:
             if pattern.search(text_to_check):
                 if logger is not None:
                     logger.debug(
-                    "Job excluded by keyword filter",
-                    extra={"job_id": job_data.get("id"), "keyword": pattern.pattern},
-                )
+                        "Job excluded by keyword filter",
+                        extra={
+                            "job_id": job_data.get("id"),
+                            "keyword": pattern.pattern,
+                        },
+                    )
                 return True
 
         return False
@@ -313,7 +320,14 @@ class JobMatcher:
             return 0.5  # Unknown salary = neutral
 
         # Convert to yearly GBP for comparison
-        target_min = (self.preferences.salary.get("min_gbp", 0) if self.preferences is not None and hasattr(self.preferences, "salary") and self.preferences.salary is not None and hasattr(self.preferences.salary, "get") else 0)
+        target_min = (
+            self.preferences.salary.get("min_gbp", 0)
+            if self.preferences is not None
+            and hasattr(self.preferences, "salary")
+            and self.preferences.salary is not None
+            and hasattr(self.preferences.salary, "get")
+            else 0
+        )
 
         # Convert based on currency and period
         if currency == "USD":
@@ -408,24 +422,26 @@ class JobMatcher:
             except Exception as e:
                 if logger is not None:
                     logger.error(
-                    "Error matching job",
-                    extra={"job_id": job.get("id"), "error": str(e)},
-                    exc_info=True,
-                )
+                        "Error matching job",
+                        extra={"job_id": job.get("id"), "error": str(e)},
+                        exc_info=True,
+                    )
                 continue
 
         # Sort by score descending
         results.sort(key=lambda x: x[1], reverse=True)
 
         if logger is not None:
-                logger.info(
-            "Job matching complete",
-            extra={
-                "total_jobs": len(jobs),
-                "matched_jobs": len(results),
-                "match_rate": round(len(results) / len(jobs) * 100, 2) if jobs else 0,
-            },
-        )
+            logger.info(
+                "Job matching complete",
+                extra={
+                    "total_jobs": len(jobs),
+                    "matched_jobs": len(results),
+                    "match_rate": (
+                        round(len(results) / len(jobs) * 100, 2) if jobs else 0
+                    ),
+                },
+            )
 
         return results
 
