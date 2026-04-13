@@ -12,7 +12,6 @@ import sys
 # Add parent dir to path for imports
 sys.path.insert(0, "/teamspace/studios/this_studio/job-scout")
 
-from src.config_manager import PlatformConfig
 from src.discovery.platforms import get_scraper, list_scrapers
 
 # Set up logging

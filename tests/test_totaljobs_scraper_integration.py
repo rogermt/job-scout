@@ -4,7 +4,6 @@ Tests Totaljobs job scraping logic with mocked external dependencies.
 Unit tests do NOT make real HTTP requests.
 """
 
-from datetime import datetime
 from unittest.mock import Mock, patch
 
 import pytest
@@ -235,6 +234,7 @@ class TestOtherMethods:
         assert isinstance(result, str)
         assert result.startswith("2026-")
         assert len(result) == 10
+
     def test_platform_name(self, scraper: TotaljobsScraper) -> None:
         """Test platform name."""
         assert scraper.get_platform_name() == "Totaljobs"

@@ -4,7 +4,6 @@ Fix indentation error in base_scraper.py
 The issue is at line 349 where def parse_salary is indented one level too deep.
 """
 
-
 # Read the file
 with open("src/job_discovery/base_scraper.py", "r") as f:
     lines = f.readlines()

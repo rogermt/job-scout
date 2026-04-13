@@ -114,7 +114,7 @@ def search(
                 jobs_scraped += 1
 
                 # Save to database
-                job_id = scraper.save_job(job_data)
+                scraper.save_job(job_data)
 
                 # Display
                 console.print(f"  [green]✓[/green] {job_data['title'][:50]}")

@@ -56,7 +56,7 @@ mock_logging.get_logger = lambda name: Mock()
 sys.modules["src.logging_config"] = mock_logging
 
 # Now import the job matcher
-from src.job_discovery.job_matching import JobMatcher
+from src.job_discovery.job_matching import JobMatcher  # noqa: E402
 
 
 @dataclass
@@ -294,7 +294,7 @@ class JobMatchingTester:
             },
         ]
 
-        expected_scores = {
+        expected_scores = {  # noqa: F841
             "gbp-70k": 1.0,  # Above threshold
             "gbp-45k": 0.9,  # Meets threshold
             "gbp-35k": 0.6,  # Close
@@ -638,7 +638,9 @@ class JobMatchingTester:
             )
         )
 
-        print(f"  {'✅' if perfect_ok else '❌'} Perfect match: {perfect_score:.1f}/100")
+        print(
+            f"  {'✅' if perfect_ok else '❌'} Perfect match: {perfect_score:.1f}/100"
+        )
         print(
             f"     Reasons: Title:{perfect_reasons['title_match']} Keywords:{perfect_reasons['keyword_matches']} "
             f"Location:{perfect_reasons['location_match']} Salary:{perfect_reasons['salary_match']} "

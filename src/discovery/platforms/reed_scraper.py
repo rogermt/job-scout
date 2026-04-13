@@ -30,7 +30,7 @@ class ReedScraper(BaseScraper):
     ) -> str:
         """Build search URL with parameters."""
         base_url = "https://www.reed.co.uk/jobs"
-        params = f"?keywords={query.replace(" ", "+")}"
+        params = f'?keywords={query.replace(" ", "+")}'
         if location:
             params += f"&location={location}"
         if page := kwargs.get("page", 0):

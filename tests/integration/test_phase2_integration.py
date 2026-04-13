@@ -148,7 +148,6 @@ except Exception as e:
 # Test 4: Salary Parser
 print("\n[Test 4] UK Salary Parser...")
 try:
-    from src.discovery.platforms.base_scraper import BaseScraper
 
     test_salaries = [
         "£30,000 - £50,000",

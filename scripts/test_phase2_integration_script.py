@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Phase 2 Integration Test - UK Job Discovery
 Test all 4 UK scrapers plus job matching algorithm"""
+
 import sys
 from pathlib import Path
 

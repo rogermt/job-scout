@@ -312,7 +312,7 @@ class JobMatcher:
 
         salary = job_data.get("salary", {})
         min_salary = salary.get("min")
-        max_salary = salary.get("max")
+        # max_salary = salary.get("max")
         currency = salary.get("currency", "GBP")
         period = salary.get("period", "yearly")
 
