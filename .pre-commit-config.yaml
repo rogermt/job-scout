@@ -33,6 +33,8 @@ repos:
       - id: mypy
         language_version: python3.11
         additional_dependencies: [pydantic, sqlalchemy, beautifulsoup4, requests, python-dateutil, pydantic-settings, email-validator]
+        args: [--config-file, mypy.ini]
+        stages: [manual]
 
   - repo: local
     hooks:
