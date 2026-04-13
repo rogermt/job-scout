@@ -18,6 +18,10 @@ from dataclasses import dataclass
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
+# Import before mocking to satisfy mypy
+from src.config_manager import get_settings, JobPreferences, Settings  # noqa: F401
+from src import logging_config  # noqa: F401
+
 # Monkey patch get_settings to avoid importing issues
 from unittest.mock import Mock
 
@@ -41,18 +45,15 @@ mock_settings.job_preferences.salary.max_gbp = None
 mock_settings.job_preferences.remote_only = False
 mock_settings.job_preferences.get.return_value = 40.0  # min_score_threshold
 
-# Mock the imports that might cause issues
+# Mock the imports that might might cause issues
 mock_cm = Mock()
 sys.modules["src.config_manager"] = mock_cm
 mock_cm.get_settings = lambda: mock_settings
 mock_cm.JobPreferences = Mock
 mock_cm.Settings = Mock
-sys.modules["src.logging_config"] = Mock()
-sys.modules["src.config_manager"].get_settings = lambda: mock_settings
-sys.modules["src.config_manager"].JobPreferences = Mock
-sys.modules["src.config_manager"].Settings = Mock
-sys.modules["src.logging_config"] = Mock()
-sys.modules["src.logging_config"].get_logger = lambda name: Mock()
+mock_logging = Mock()
+mock_logging.get_logger = lambda name: Mock()
+sys.modules["src.logging_config"] = mock_logging
 
 # Now import the job matcher
 from src.job_discovery.job_matching import JobMatcher
