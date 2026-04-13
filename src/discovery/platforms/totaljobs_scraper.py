@@ -48,29 +48,31 @@ class TotaljobsScraper(BaseScraper):
 
     def extract_job_listings(self, soup: BeautifulSoup) -> list[Tag]:
         """Extract job listing elements from search results."""
-        return soup.select(".job-card, .job-listing, [data-id]")
+        return soup.select(".job-item, .job-card, .job-listing")
 
     def parse_job_listing(self, element: Tag) -> Optional[dict[str, Any]]:
         """Parse a single job listing element."""
         job_id = (
             element.get("data-id") or element.get("data-job-id") or element.get("id")
         )
-        title_elem = element.select_one("h2 a, .job-title a, h3 a")
+        title_elem = element.select_one("h2.job-title, .job-title, h2 a, h3 a")
         title = title_elem.get_text(strip=True) if title_elem else "Unknown"
         company_elem = element.select_one(".company, .employer")
-        company = company_elem.get_text(strip=True) if company_elem else ""
+        company = company_elem.get_text(strip=True) if company_elem else "Unknown"
         location_elem = element.select_one(".location, [itemprop=jobLocation]")
-        location_text = location_elem.get_text(strip=True) if location_elem else ""
+        location_text = (
+            location_elem.get_text(strip=True) if location_elem else "Unknown"
+        )
         salary_elem = element.select_one(".salary, [itemprop=baseSalary]")
         salary_text = salary_elem.get_text(strip=True) if salary_elem else ""
-        type_elem = element.select_one(".type, .contract-type")
+        type_elem = element.select_one(".job-type, .type, .contract-type")
         type_text = type_elem.get_text(strip=True) if type_elem else ""
         return {
             "platform_id": job_id or "",
             "title": title,
             "company": company,
             "location": {"original": location_text},
-            "salary": self._parse_salary(salary_text),
+            "salary": {**self._parse_salary(salary_text), "original": salary_text},
             "contract_type": self._parse_contract_type(type_text),
         }
 

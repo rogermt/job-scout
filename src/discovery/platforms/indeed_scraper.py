@@ -31,7 +31,9 @@ class IndeedScraper(BaseScraper):
         """Build search URL with parameters."""
         base_url = "https://uk.indeed.com/jobs"
         params = f"?sort=date&q={query.replace(' ', '+')}"
-        if location:
+        if location == "remote":
+            params += "&remote=true"
+        elif location:
             params += f"&l={location}"
         if page := kwargs.get("page", 0):
             params += f"&start={page * 10}"
