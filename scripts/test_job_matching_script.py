@@ -638,9 +638,7 @@ class JobMatchingTester:
             )
         )
 
-        print(
-            f"  {'✅' if perfect_ok else '❌'} Perfect match: {perfect_score:.1f}/100"
-        )
+        print(f"  {'✅' if perfect_ok else '❌'} Perfect match: {perfect_score:.1f}/100")
         print(
             f"     Reasons: Title:{perfect_reasons['title_match']} Keywords:{perfect_reasons['keyword_matches']} "
             f"Location:{perfect_reasons['location_match']} Salary:{perfect_reasons['salary_match']} "

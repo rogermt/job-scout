@@ -53,7 +53,6 @@ class JobPreferences(BaseModel):
 
 
 class PlatformConfig(BaseModel):
-
     # Extended fields for testing
     keywords: str = ""
     location: str = ""
