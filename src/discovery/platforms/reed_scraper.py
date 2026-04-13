@@ -79,6 +79,19 @@ class ReedScraper(BaseScraper):
         type_text = type_elem.get_text(strip=True) if type_elem else ""
         contract_type = self._parse_contract_type(type_text)
 
+        # Detect remote policy from location text
+        remote_policy = ""
+        remote_types = []
+        if location_text:
+            location_lower = location_text.lower()
+            if "remote" in location_lower:
+                if "hybrid" in location_lower:
+                    remote_policy = "hybrid"
+                    remote_types = ["partial"]
+                else:
+                    remote_policy = "fully-remote"
+                    remote_types = ["full"]
+
         return {
             "platform_id": job_id or "",
             "title": title,
@@ -86,6 +99,8 @@ class ReedScraper(BaseScraper):
             "location": location,
             "salary": salary,
             "contract_type": contract_type,
+            "remote_policy": remote_policy or "",
+            "remote_types": remote_types or [],
         }
 
     def get_job_details(self, job_url: str) -> Optional[dict[str, Any]]:
