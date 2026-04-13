@@ -683,6 +683,40 @@ class TestBaseScraperMethods:
         result = indeed_scraper.parse_posted_date("6 hours ago")
         assert result is not None
 
+    def test_scrape_jobs_with_job_data(self, indeed_scraper):
+        """Test scrape_jobs yields actual job data."""
+        from unittest.mock import patch, MagicMock
+
+        # Create mock soup with job elements
+        mock_element = MagicMock()
+        mock_element.select_one.return_value = MagicMock(
+            text="Title", get=lambda x: "http://job.url"
+        )
+        mock_element.select.return_value = []
+
+        mock_soup = MagicMock()
+        mock_soup.select.return_value = [mock_element]
+
+        mock_job_data = {
+            "title": "Developer",
+            "company": "Tech Co",
+            "url": "http://job.url",
+        }
+
+        with patch.object(indeed_scraper, "fetch_page", return_value=mock_soup):
+            with patch.object(
+                indeed_scraper, "get_search_url", return_value="http://test"
+            ):
+                with patch.object(
+                    indeed_scraper, "extract_job_listings", return_value=[mock_element]
+                ):
+                    with patch.object(
+                        indeed_scraper, "parse_job_listing", return_value=mock_job_data
+                    ):
+                        jobs = list(indeed_scraper.scrape_jobs("python", max_pages=1))
+                        assert len(jobs) == 1
+                        assert jobs[0]["title"] == "Developer"
+
 
 class TestStackOverflowMethods:
     """Test StackOverflow scraper methods."""
