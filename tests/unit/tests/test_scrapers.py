@@ -1,6 +1,7 @@
+import os
 import sys
 
-sys.path.append("/teamspace/studios/this_studio/job-scout/tests/mocks")
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", "mocks"))
 
 from src.discovery.platforms import (
     TotaljobsScraper,
