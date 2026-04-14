@@ -3,6 +3,10 @@
 # Database functionality needs implementation
 
 
-def init_database() -> None:
-    """Initialize database connection."""
+def init_database(db_config=None) -> None:
+    """Initialize database connection.
+    
+    Args:
+        db_config: Optional database configuration settings.
+    """
     pass
