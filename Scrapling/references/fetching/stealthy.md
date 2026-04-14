@@ -18,7 +18,7 @@ Check out how to configure the parsing options [here](choosing.md#parser-configu
 
 The `StealthyFetcher` class is a stealthy version of the [DynamicFetcher](dynamic.md) class, and here are some of the things it does:
 
-1. It easily bypasses all types of Cloudflare's Turnstile/Interstitial automatically. 
+1. It easily bypasses all types of Cloudflare's Turnstile/Interstitial automatically.
 2. It bypasses CDP runtime leaks and WebRTC leaks.
 3. It isolates JS execution, removes many Playwright fingerprints, and stops detection through some of the known behaviors that bots do.
 4. It generates canvas noise to prevent fingerprinting through canvas.
@@ -200,9 +200,9 @@ with StealthySession(
 ) as session:
     # Make multiple requests with the same browser instance
     page1 = session.fetch('https://example1.com')
-    page2 = session.fetch('https://example2.com') 
+    page2 = session.fetch('https://example2.com')
     page3 = session.fetch('https://nopecha.com/demo/cloudflare')
-    
+
     # All requests reuse the same tab on the same browser instance
 ```
 
@@ -223,7 +223,7 @@ async def scrape_multiple_sites():
         # Make async requests with shared browser configuration
         pages = await asyncio.gather(
             session.fetch('https://site1.com'),
-            session.fetch('https://site2.com'), 
+            session.fetch('https://site2.com'),
             session.fetch('https://protected-site.com')
         )
         return pages

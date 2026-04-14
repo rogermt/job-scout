@@ -45,6 +45,3 @@ get / FetcherSession
        └─ If blocked → stealthy-fetch / StealthySession
             └─ If multi-page → Spider
 ```
-
-
-

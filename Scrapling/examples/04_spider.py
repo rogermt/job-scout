@@ -58,6 +58,3 @@ if __name__ == "__main__":
     # Export to JSON
     result.items.to_json("quotes.json", indent=True)
     print("\nExported to quotes.json")
-
-
-

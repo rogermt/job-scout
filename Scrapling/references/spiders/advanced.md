@@ -62,7 +62,7 @@ else:
 3. **Resuming**: Run the spider again with the same `crawldir`. It detects the checkpoint, restores the queue and seen set, and continues from where it left off, skipping `start_requests()`.
 4. **Cleanup**: When a crawl completes normally (not paused), the checkpoint files are deleted automatically.
 
-**Checkpoints are also saved periodically during the crawl (every 5 minutes by default).** 
+**Checkpoints are also saved periodically during the crawl (every 5 minutes by default).**
 
 You can change the interval as follows:
 

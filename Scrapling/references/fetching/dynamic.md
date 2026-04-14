@@ -271,10 +271,10 @@ def scrape_dynamic_content():
         network_idle=True,
         wait_selector='.content'
     )
-    
+
     # Extract dynamic content
     content = page.css('.content')
-    
+
     return {
         'title': content.css('h1::text').get(),
         'items': [
@@ -300,7 +300,7 @@ with DynamicSession(
     page1 = session.fetch('https://example1.com')
     page2 = session.fetch('https://example2.com')
     page3 = session.fetch('https://dynamic-site.com')
-    
+
     # All requests reuse the same tab on the same browser instance
 ```
 
@@ -349,7 +349,7 @@ Use DynamicFetcher when:
 - Want multiple browser options
 - Using a real Chrome browser
 - Need custom browser config
-- Want a few stealth options 
+- Want a few stealth options
 
 If you want more stealth and control without much config, check out the [StealthyFetcher](stealthy.md).
 

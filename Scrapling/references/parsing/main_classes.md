@@ -54,14 +54,14 @@ Parsing this HTML page as an example:
         <span class="price">$10.99</span>
         <div class="hidden stock">In stock: 5</div>
       </article>
-    
+
       <article class="product" data-id="2">
         <h3>Product 2</h3>
         <p class="description">This is product 2</p>
         <span class="price">$20.99</span>
         <div class="hidden stock">In stock: 3</div>
       </article>
-    
+
       <article class="product" data-id="3">
         <h3>Product 3</h3>
         <p class="description">This is product 3</p>
@@ -413,13 +413,13 @@ All operations (slicing, indexing, etc.) and methods (`split`, `replace`, `strip
 The `re` and `re_first` methods exist in [Selector](#selector), [Selectors](#selectors), and [TextHandlers](#texthandlers) as well, accepting the same arguments.
 
 - The `re` method takes a string/compiled regex pattern as the first argument. It searches the data for all strings matching the regex and returns them as a [TextHandlers](#texthandlers) instance. The `re_first` method takes the same arguments but returns only the first result as a `TextHandler` instance.
-    
+
     Also, it takes other helpful arguments, which are:
-    
+
     - **replace_entities**: This is enabled by default. It replaces character entity references with their corresponding characters.
     - **clean_match**: It's disabled by default. This causes the method to ignore all whitespace, including consecutive spaces, while matching.
     - **case_sensitive**: It's enabled by default. As the name implies, disabling it causes the regex to ignore letter case during compilation.
-  
+
     The return result is [TextHandlers](#texthandlers) because the `re` method is used:
     ```python
     >>> page.css('.price_color').re(r'[\d\.]+')
@@ -429,7 +429,7 @@ The `re` and `re_first` methods exist in [Selector](#selector), [Selectors](#sel
      '47.82',
      '54.23',
     ...]
-    
+
     >>> page.css('.product_pod h3 a::attr(href)').re(r'catalogue/(.*)/index.html')
     ['a-light-in-the-attic_1000',
      'tipping-the-velvet_999',
@@ -444,12 +444,12 @@ The `re` and `re_first` methods exist in [Selector](#selector), [Selectors](#sel
     >>> test_string.re('hi there')
     >>> test_string.re('hi there', clean_match=True)  # Using `clean_match` will clean the string before matching the regex
     ['hi there']
-    
+
     >>> test_string2 = TextHandler('Oh, Hi Mark')
     >>> test_string2.re_first('oh, hi Mark')
     >>> test_string2.re_first('oh, hi Mark', case_sensitive=False)  # Hence disabling `case_sensitive`
     'Oh, Hi Mark'
-    
+
     # Mixing arguments
     >>> test_string.re('hi there', clean_match=True, case_sensitive=False)
     ['hi There']
@@ -554,7 +554,7 @@ It currently adds two extra simple methods:
 - The `search_values` method
 
     Searches the current attributes by values (rather than keys) and returns a dictionary of each matching item.
-    
+
     A simple example would be
     ```python
     >>> for i in page.find('script').attrib.search_values('page-data'):
@@ -575,16 +575,14 @@ It currently adds two extra simple methods:
      <data='<article class="product" data-id="3"><h3...' parent='<div class="product-list"> <article clas...'>]
     ```
     All these elements have 'product' as the value for the `class` attribute.
-    
+
     The `list` function is used here because `search_values` returns a generator, so it would be `True` for all elements.
 
 - The `json_string` property
 
     This property converts current attributes to a JSON string if the attributes are JSON serializable; otherwise, it throws an error.
-  
+
     ```python
     >>>page.find('script').attrib.json_string
     b'{"id":"page-data","type":"application/json"}'
     ```
-
-

@@ -66,7 +66,7 @@ Examples are the best way to explain this:
 >>> # HTTP/3 support
 >>> page = Fetcher.get('https://example.com', http3=True)
 ```
-And for asynchronous requests, it's a small adjustment 
+And for asynchronous requests, it's a small adjustment
 ```python
 >>> from scrapling.fetchers import AsyncFetcher
 >>> # Basic GET
@@ -282,10 +282,10 @@ from scrapling.fetchers import Fetcher
 
 def scrape_products():
     page = Fetcher.get('https://example.com/products')
-    
+
     # Find all product elements
     products = page.css('.product')
-    
+
     results = []
     for product in products:
         results.append({
@@ -294,7 +294,7 @@ def scrape_products():
             'description': product.css('.description::text').get(),
             'in_stock': product.has_class('in-stock')
         })
-    
+
     return results
 ```
 
@@ -317,26 +317,26 @@ def scrape_all_pages():
     base_url = 'https://example.com/products?page={}'
     page_num = 1
     all_products = []
-    
+
     while True:
         # Get current page
         page = Fetcher.get(base_url.format(page_num))
-        
+
         # Find products
         products = page.css('.product')
         if not products:
             break
-            
+
         # Process products
         for product in products:
             all_products.append({
                 'name': product.css('.name::text').get(),
                 'price': product.css('.price::text').get()
             })
-            
+
         # Next page
         page_num += 1
-        
+
     return all_products
 ```
 
@@ -368,21 +368,21 @@ from scrapling.fetchers import Fetcher
 
 def extract_table():
     page = Fetcher.get('https://example.com/data')
-    
+
     # Find table
     table = page.css('table')[0]
-    
+
     # Extract headers
     headers = [
         th.text for th in table.css('thead th')
     ]
-    
+
     # Extract rows
     rows = []
     for row in table.css('tbody tr'):
         cells = [td.text for td in row.css('td')]
         rows.append(dict(zip(headers, cells)))
-        
+
     return rows
 ```
 
@@ -393,10 +393,10 @@ from scrapling.fetchers import Fetcher
 
 def extract_menu():
     page = Fetcher.get('https://example.com')
-    
+
     # Find navigation
     nav = page.css('nav')[0]
-    
+
     menu = {}
     for item in nav.css('li'):
         links = item.css('a')
@@ -406,7 +406,7 @@ def extract_menu():
                 'url': link['href'],
                 'has_submenu': bool(item.css('.submenu'))
             }
-            
+
     return menu
 ```
 

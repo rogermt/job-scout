@@ -126,7 +126,7 @@ class TestMainModule:
         from src.config_manager import PlatformConfig
 
         config = PlatformConfig(enabled=True, region="uk", base_url="http://test")
-        result = get_scraper("indeed", config)
+        result = get_scraper("reed", config)
         assert result is None or hasattr(result, "scrape_jobs")
 
     def test_list_scrapers(self):

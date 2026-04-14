@@ -116,7 +116,7 @@ Scrapling can find elements similar to a given element, inspired by the AutoScra
 
 Given an element (e.g., a product found by title), calling `.find_similar()` on it causes Scrapling to:
 
-1. Find all page elements with the same DOM tree depth as this element. 
+1. Find all page elements with the same DOM tree depth as this element.
 2. All found elements will be checked, and those without the same tag name, parent tag name, and grandparent tag name will be dropped.
 3. As a final check, Scrapling uses fuzzy matching to drop elements whose attributes don't resemble the original element's attributes. A configurable percentage controls this step (see arguments below).
 
@@ -307,10 +307,10 @@ def extract_reviews(page):
     review_container = first_review.find_ancestor(
         lambda e: e.has_class('review')
     )
-    
+
     # Find similar reviews
     all_reviews = review_container.find_similar()
-    
+
     return [
         {
             'text': r.css('.review-text::text').get(),

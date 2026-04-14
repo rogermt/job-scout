@@ -17,5 +17,3 @@ clawhub install scrapling-official
 ```
 
 Or go to the [Clawhub](https://docs.openclaw.ai/tools/clawhub) page from [here](https://clawhub.ai/D4Vinci/scrapling-official).
-
-

@@ -205,4 +205,3 @@ class ProductSpider(Spider):
         }
 ```
 **Note:** Upon spider closure, the manager automatically checks whether any sessions are still running and closes them before closing the spider.
-

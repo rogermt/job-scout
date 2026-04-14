@@ -33,7 +33,7 @@ All fetchers share the same import method, as you will see in the upcoming pages
 ```
 Then you use it right away without initializing like this, and it will use the default parser settings:
 ```python
->>> page = StealthyFetcher.fetch('https://example.com') 
+>>> page = StealthyFetcher.fetch('https://example.com')
 ```
 If you want to configure the parser ([Selector class](parsing/main_classes.md#selector)) that will be used on the response before returning it for you, then do this first:
 ```python

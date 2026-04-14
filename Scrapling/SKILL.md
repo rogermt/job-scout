@@ -263,14 +263,14 @@ class QuotesSpider(Spider):
     start_urls = ["https://quotes.toscrape.com/"]
     concurrent_requests = 10
     robots_txt_obey = True  # Respect robots.txt rules
-    
+
     async def parse(self, response: Response):
         for quote in response.css('.quote'):
             yield {
                 "text": quote.css('.text::text').get(),
                 "author": quote.css('.author::text').get(),
             }
-            
+
         next_page = response.css('.next a')
         if next_page:
             yield response.follow(next_page[0].attrib['href'])
@@ -287,11 +287,11 @@ from scrapling.fetchers import FetcherSession, AsyncStealthySession
 class MultiSessionSpider(Spider):
     name = "multi"
     start_urls = ["https://example.com/"]
-    
+
     def configure_sessions(self, manager):
         manager.add("fast", FetcherSession(impersonate="chrome"))
         manager.add("stealth", AsyncStealthySession(headless=True), lazy=True)
-    
+
     async def parse(self, response: Response):
         for link in response.css('a::attr(href)').getall():
             # Route protected pages through the stealth session
