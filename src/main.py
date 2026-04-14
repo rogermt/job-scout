@@ -116,6 +116,10 @@ def search(
             continue
 
         try:
+            # Get and log the search URL
+            search_url = scraper.get_search_url(query, location)
+            logger.debug(f"Searching {platform_name}: {search_url}")
+            
             jobs_scraped = 0
             # Scrape jobs
             for job_data in scraper.scrape_jobs(query, location, max_pages=max_pages):
