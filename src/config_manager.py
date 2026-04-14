@@ -175,11 +175,11 @@ class Settings(BaseSettings):
             "indeed": PlatformConfig(enabled=True, region="uk"),
             "reed": PlatformConfig(enabled=True),
             "totaljobs": PlatformConfig(enabled=True),
-            "cvlibrary": PlatformConfig(enabled=True),
-            "stackoverflow": PlatformConfig(enabled=True),
-            "weworkremotely": PlatformConfig(enabled=True),
-            "remoteok": PlatformConfig(enabled=True),
-            "workingnomads": PlatformConfig(enabled=True),
+            "cvlibrary": PlatformConfig(enabled=False),  # No scraper implemented
+            "stackoverflow": PlatformConfig(enabled=False),  # No scraper implemented
+            "weworkremotely": PlatformConfig(enabled=False),  # No scraper implemented
+            "remoteok": PlatformConfig(enabled=False),  # No scraper implemented
+            "workingnomads": PlatformConfig(enabled=False),  # No scraper implemented
         }
     )
 

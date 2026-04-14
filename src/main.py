@@ -6,6 +6,7 @@ ForgeSyte standards with proper CLI design and error handling.
 """
 
 import sys
+import logging
 from typing import Optional
 
 import click
@@ -22,6 +23,9 @@ from tracking.database import init_database
 # Console for rich output
 console = Console()
 
+# Get logger for this module
+logger = logging.getLogger(__name__)
+
 
 @click.group()
 @click.version_option(version="0.1.0")
@@ -29,7 +33,7 @@ console = Console()
 @click.option(
     "--log-level",
     type=click.Choice(["DEBUG", "INFO", "WARNING", "ERROR"]),
-    default="INFO",
+    default="DEBUG",  # Set default to DEBUG
 )
 @click.pass_context
 def cli(ctx: click.Context, debug: bool, log_level: str) -> None:
@@ -37,6 +41,12 @@ def cli(ctx: click.Context, debug: bool, log_level: str) -> None:
 
     Job Scout helps you discover job opportunities across multiple platforms.
     """
+    # Set global log level to DEBUG
+    logging.basicConfig(
+        level=logging.DEBUG if debug or log_level == "DEBUG" else logging.INFO,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    )
+    logger.debug(f"Debug mode: {debug}, Log level: {log_level}")
     # Initialize settings
     settings = get_settings()
 
