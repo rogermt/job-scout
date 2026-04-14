@@ -10,9 +10,10 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "src"))
 try:
     print("Testing imports...")
 
-    # Test that we can import tracking.database without errors
-
-    print("✓ Successfully imported from tracking.database")
+    # Test that we can import tracking.database without errors (mocked)
+    from unittest.mock import patch
+    with patch('tracking.database.init_database'):
+        print("✓ Successfully imported from tracking.database (mocked)")
 
     # Test that we can import job_discovery modules without errors
 
