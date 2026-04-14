@@ -41,11 +41,9 @@ def cli(ctx: click.Context, debug: bool, log_level: str) -> None:
 
     Job Scout helps you discover job opportunities across multiple platforms.
     """
-    # Set global log level to DEBUG
-    logging.basicConfig(
-        level=logging.DEBUG if debug or log_level == "DEBUG" else logging.INFO,
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    )
+    # Setup logging using logging_config.py
+    setup_logging(log_level=log_level)
+    logger = logging.getLogger(__name__)
     logger.debug(f"Debug mode: {debug}, Log level: {log_level}")
     # Initialize settings
     settings = get_settings()
