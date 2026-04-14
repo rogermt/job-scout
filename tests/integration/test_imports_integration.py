@@ -12,7 +12,8 @@ try:
 
     # Test that we can import tracking.database without errors (mocked)
     from unittest.mock import patch
-    with patch('tracking.database.init_database'):
+
+    with patch("tracking.database.init_database"):
         print("✓ Successfully imported from tracking.database (mocked)")
 
     # Test that we can import job_discovery modules without errors

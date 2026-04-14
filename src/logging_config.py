@@ -3,7 +3,7 @@ import logging
 
 def setup_logging(log_file: str = "logs/job_scout.log", log_level: str = "DEBUG"):
     """Configure logging with file and console handlers.
-    
+
     Following PYTHON_STANDARDS.md recommendations.
 
     Args:
