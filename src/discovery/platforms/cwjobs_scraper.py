@@ -111,12 +111,12 @@ class CwjobsScraper(BaseScraper):
 
     def _parse_posted_date(self, text: str) -> Optional[str]:
         text_lower = text.lower()
-        days_match = re.search(r"(\n+)\bday", text_lower)
+        days_match = re.search(r"(\d+)\s*day", text_lower)
         if days_match:
             days = int(days_match.group(1))
             return (datetime.now() - timedelta(days=days)).strftime("%Y-%m-%d")
 
-        weeks_match = re.search(r"(\n+)\bweek", text_lower)
+        weeks_match = re.search(r"(\d+)\s*week", text_lower)
         if weeks_match:
             weeks = int(weeks_match.group(1))
             return (datetime.now() - timedelta(weeks=weeks)).strftime("%Y-%m-%d")
