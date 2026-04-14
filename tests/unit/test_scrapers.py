@@ -81,8 +81,8 @@ class TestReedScraper:
 class TestErrorHandling:
     def test_invalid_platform(self):
         config = PlatformConfig()
-        with pytest.raises(ValueError):
-            get_scraper("invalid_platform", config)
+        result = get_scraper("invalid_platform", config)
+        assert result is None
 
     def test_error_handling_works(self, platform_configs):
         scraper = get_scraper("reed", platform_configs["reed"])

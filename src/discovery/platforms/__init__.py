@@ -18,5 +18,5 @@ def list_scrapers() -> list[str]:
 
 def get_scraper(name: str, config: Dict[str, Any]) -> Any:
     if name not in _scrapers:
-        raise ValueError(f"Unknown scraper: {name}")
+        return None
     return _scrapers[name](platform_name=name, config=config)
