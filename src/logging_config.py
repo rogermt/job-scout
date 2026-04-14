@@ -1,4 +1,5 @@
 import logging
+import os
 
 
 def setup_logging(log_file: str = "logs/job_scout.log", log_level: str = "DEBUG"):
@@ -10,6 +11,11 @@ def setup_logging(log_file: str = "logs/job_scout.log", log_level: str = "DEBUG"
         log_file: Path to log file (default: logs/job_scout.log)
         log_level: Log level (default: DEBUG for debugging)
     """
+    # Create logs directory if it doesn't exist
+    log_dir = os.path.dirname(log_file)
+    if log_dir and not os.path.exists(log_dir):
+        os.makedirs(log_dir, exist_ok=True)
+
     level = getattr(logging, log_level.upper(), logging.DEBUG)
     logging.basicConfig(
         level=level,
