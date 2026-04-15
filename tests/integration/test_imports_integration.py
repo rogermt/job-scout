@@ -1,38 +1,53 @@
 #!/usr/bin/env python3
-"""Test script to verify circular import fixes."""
+"""Test script to verify imports work correctly."""
+
+# ruff: noqa: F401
 
 import sys
 import os
 
-# Add src to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "src"))
+# Add project root to path
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 try:
     print("Testing imports...")
 
-    # Test that we can import tracking.database without errors (mocked)
-    from unittest.mock import patch
+    # Test tracking module
+    from src.tracking.database import init_database, get_session  # noqa: F401
 
-    with patch("tracking.database.init_database"):
-        print("✓ Successfully imported from tracking.database (mocked)")
+    print("✓ Successfully imported from tracking.database")
 
-    # Test that we can import job_discovery modules without errors
+    # Test discovery modules
+    from src.discovery.platforms.base_scraper import BaseScraper  # noqa: F401
 
-    print("✓ Successfully imported from job_discovery.base_scraper")
+    print("✓ Successfully imported from discovery.platforms.base_scraper")
 
-    print("✓ Successfully imported from job_discovery.indeed_scraper")
+    import src.discovery.platforms  # noqa: F401
 
-    print("✓ Successfully imported from job_discovery.reed_scraper")
+    print("✓ Successfully imported from discovery.platforms")
 
-    print("✓ Successfully imported from job_discovery.totaljobs_scraper")
+    from src.discovery.platforms.cvlibrary_scraper import CvlibraryScraper  # noqa: F401
 
-    print("✓ Successfully imported from job_discovery.stackoverflow_scraper")
+    print("✓ Successfully imported from discovery.platforms.cvlibrary_scraper")
 
-    # Test config manager
+    from src.discovery.platforms.reed_scraper import ReedScraper  # noqa: F401
+
+    print("✓ Successfully imported from discovery.platforms.reed_scraper")
+
+    from src.discovery.platforms.totaljobs_scraper import TotaljobsScraper  # noqa: F401
+
+    print("✓ Successfully imported from discovery.platforms.totaljobs_scraper")
+
+    from src.discovery.platforms.cwjobs_scraper import CwjobsScraper  # noqa: F401
+
+    print("✓ Successfully imported from discovery.platforms.cwjobs_scraper")
+
+    # Test config manager - use Settings instead of ConfigManager
+    from src.config_manager import Settings, get_settings  # noqa: F401
 
     print("✓ Successfully imported from config_manager")
 
-    print("\n✅ All imports successful! Circular import issue resolved.")
+    print("\n✅ All imports successful!")
 
 except Exception as e:
     print(f"\n❌ Import error: {e}")

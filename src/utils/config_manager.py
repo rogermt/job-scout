@@ -166,11 +166,9 @@ class Settings(BaseSettings):
     # Platform-specific settings
     platforms: dict[str, PlatformConfig] = Field(
         default_factory=lambda: {
-            "indeed": PlatformConfig(enabled=True, region="uk"),
             "reed": PlatformConfig(enabled=True),
             "totaljobs": PlatformConfig(enabled=True),
             "cvlibrary": PlatformConfig(enabled=True),
-            "stackoverflow": PlatformConfig(enabled=True),
             "weworkremotely": PlatformConfig(enabled=True),
             "remoteok": PlatformConfig(enabled=True),
             "workingnomads": PlatformConfig(enabled=True),
