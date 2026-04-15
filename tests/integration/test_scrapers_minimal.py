@@ -172,6 +172,8 @@ def test_instantiate_scraper():
     configs = {
         "reed": PlatformConfig(enabled=True, region="uk"),
         "totaljobs": PlatformConfig(enabled=True, region="uk"),
+        "cvlibrary": PlatformConfig(enabled=True, region="uk"),
+        "cwjobs": PlatformConfig(enabled=True, region="uk"),
     }
 
     for platform_name, config in configs.items():
