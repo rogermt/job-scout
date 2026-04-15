@@ -87,7 +87,7 @@ class CwjobsScraper(BaseScraper):
         if not salary_text:
             return {"min": None, "max": None, "currency": "GBP", "period": "yearly"}
 
-        numbers = re.findall(r"[\n,]+", salary_text.replace(",", ""))
+        numbers = re.findall(r"\d+", salary_text.replace(",", ""))
         if numbers:
             min_salary = int(numbers[0])
             max_salary = int(numbers[-1]) if len(numbers) > 1 else min_salary
