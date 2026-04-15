@@ -3,26 +3,45 @@
 This module provides intelligent job matching based on user preferences including:
 - Job titles and keywords matching
 - Location filters (UK + remote focus)
-- Salary range validation
+- Salary range validation (Decimal precision)
 - Experience level matching
 - Contract type filtering
 - Company size preferences
 """
-
+import logging
 import re
-from typing import Any, Dict, List, Optional, Tuple
+from decimal import Decimal
+from typing import Any
+
 from src.config_manager import JobPreferences
 
-logger = None  # Will be set by _init_logger()
+logger = logging.getLogger(__name__)
 
+# Currency conversion rates (data-driven, extensible)
+CURRENCY_TO_GBP: dict[str, Decimal] = {
+    "GBP": Decimal("1.0"),
+    "USD": Decimal("0.8"),
+    "EUR": Decimal("0.85"),
+}
 
-def _init_logger():
-    global logger
-    if logger is None:
-        from src.logging_config import get_logger
+# Period-to-yearly multipliers (data-driven, no if-elif ladder)
+PERIOD_TO_YEARLY: dict[str | None, Decimal] = {
+    "yearly": Decimal("1"),
+    "monthly": Decimal("12"),
+    "weekly": Decimal("52"),
+    "daily": Decimal("260"),
+    "hourly": Decimal("2080"),
+    None: Decimal("1"),
+}
 
-        logger = get_logger(__name__)
-    return logger
+# Salary ratio scoring thresholds (data-driven, tunable)
+SALARY_RATIO_SCORES: list[tuple[float, float]] = [
+    (1.2, 1.0),
+    (1.0, 0.9),
+    (0.8, 0.6),
+    (0.6, 0.3),
+    (0.0, 0.0),
+]
 
 
 def get_settings():
@@ -79,7 +98,7 @@ class JobMatcher:
                 pattern = re.compile(r"\b" + re.escape(keyword.lower()) + r"\b", re.I)
                 self.exclude_patterns.append(pattern)
 
-    def match_job(self, job_data: Dict[str, Any]) -> Tuple[bool, float, Dict[str, Any]]:
+    def match_job(self, job_data: dict[str, Any]) -> tuple[bool, float, dict[str, Any]]:
         """Evaluate if a job matches user preferences and calculate relevance score.
 
         Args:
@@ -163,7 +182,7 @@ class JobMatcher:
 
         return matches, score, reasons
 
-    def _has_excluded_keywords(self, job_data: Dict[str, Any]) -> bool:
+    def _has_excluded_keywords(self, job_data: dict[str, Any]) -> bool:
         """Check if job contains excluded keywords.
 
         Args:
@@ -198,7 +217,7 @@ class JobMatcher:
 
         return False
 
-    def _score_title(self, job_data: Dict[str, Any]) -> float:
+    def _score_title(self, job_data: dict[str, Any]) -> float:
         """Score job based on title match.
 
         Args:
@@ -224,7 +243,7 @@ class JobMatcher:
 
         return max_score
 
-    def _score_keywords(self, job_data: Dict[str, Any]) -> float:
+    def _score_keywords(self, job_data: dict[str, Any]) -> float:
         """Score job based on keyword matches.
 
         Args:
@@ -252,7 +271,7 @@ class JobMatcher:
 
         return min(matches / len(self.keyword_patterns), 1.0)
 
-    def _score_location(self, job_data: Dict[str, Any]) -> float:
+    def _score_location(self, job_data: dict[str, Any]) -> float:
         """Score job based on location preferences (UK focus).
 
         Args:
@@ -298,8 +317,8 @@ class JobMatcher:
                     return 0.9
         return 0.0
 
-    def _score_salary(self, job_data: Dict[str, Any]) -> float:
-        """Score job based on salary expectations (UK focus).
+    def _score_salary(self, job_data: dict[str, Any]) -> float:
+        """Score job based on salary expectations (Decimal precision, data-driven).
 
         Args:
             job_data: Job data dictionary
@@ -307,60 +326,42 @@ class JobMatcher:
         Returns:
             Score from 0.0 to 1.0
         """
-        if self.preferences.salary is None or "min_gbp" not in self.preferences.salary:
+        target_min = self.preferences.salary.min_gbp
+        if not target_min or target_min <= 0:
             return 1.0  # No salary requirements
 
-        salary = job_data.get("salary", {})
-        min_salary = salary.get("min")
-        # max_salary = salary.get("max")
-        currency = salary.get("currency", "GBP")
-        period = salary.get("period", "yearly")
+        salary = job_data.get("salary") or {}
+        min_salary_raw = salary.get("min")
+        currency = str(salary.get("currency", "GBP"))
+        period = salary.get("period")
 
-        if not min_salary:
+        if min_salary_raw is None:
             return 0.5  # Unknown salary = neutral
 
-        # Convert to yearly GBP for comparison
-        target_min = (
-            self.preferences.salary.get("min_gbp", 0)
-            if self.preferences is not None
-            and hasattr(self.preferences, "salary")
-            and self.preferences.salary is not None
-            and hasattr(self.preferences.salary, "get")
-            else 0
+        # Ensure Decimal arithmetic
+        min_salary = (
+            min_salary_raw
+            if isinstance(min_salary_raw, Decimal)
+            else Decimal(str(min_salary_raw))
         )
 
-        # Convert based on currency and period
-        if currency == "USD":
-            min_salary_gbp = min_salary * 0.8  # Approximate conversion
-        elif currency == "EUR":
-            min_salary_gbp = min_salary * 0.85  # Approximate conversion
-        else:
-            min_salary_gbp = min_salary
+        # Convert to yearly GBP using data-driven mappings
+        fx_rate = CURRENCY_TO_GBP.get(currency, Decimal("1.0"))
+        period_multiplier = PERIOD_TO_YEARLY.get(period, Decimal("1"))
 
-        if period == "monthly":
-            min_salary_gbp *= 12
-        elif period == "weekly":
-            min_salary_gbp *= 52
-        elif period == "daily":
-            min_salary_gbp *= 260  # 5 days * 52 weeks
-        elif period == "hourly":
-            min_salary_gbp *= 2080  # 40 hours * 52 weeks
+        min_salary_gbp = min_salary * fx_rate * period_multiplier
 
-        # Score based on how much above minimum
-        ratio = min_salary_gbp / target_min if target_min > 0 else 1.0
+        # Score based on ratio using data-driven thresholds
+        ratio = min_salary_gbp / target_min
+        ratio_f = float(ratio)
 
-        if ratio >= 1.2:
-            return 1.0  # Great salary
-        elif ratio >= 1.0:
-            return 0.9  # Meets expectations
-        elif ratio >= 0.8:
-            return 0.6  # Close to expectations
-        elif ratio >= 0.6:
-            return 0.3  # Below expectations
-        else:
-            return 0.0  # Too low
+        for threshold, score in SALARY_RATIO_SCORES:
+            if ratio_f >= threshold:
+                return score
 
-    def _score_contract_type(self, job_data: Dict[str, Any]) -> float:
+        return 0.0  # Fallback
+
+    def _score_contract_type(self, job_data: dict[str, Any]) -> float:
         """Score job based on contract type preferences.
 
         Args:
@@ -381,7 +382,7 @@ class JobMatcher:
 
         return 0.0
 
-    def _score_remote(self, job_data: Dict[str, Any]) -> float:
+    def _score_remote(self, job_data: dict[str, Any]) -> float:
         """Score job based on remote policy (UK resident benefit).
 
         Args:
@@ -393,17 +394,23 @@ class JobMatcher:
         remote_policy = job_data.get("remote_policy", "none")
         remote_types = job_data.get("remote_types", [])
 
-        if remote_policy == "remote" or len(remote_types) > 0:
-            return 1.0  # Remote jobs are great for UK workers
+        # Data-driven remote scoring
+        remote_scores = {
+            "remote": 1.0,
+            "hybrid": 0.7,
+            "none": 0.0,
+        }
 
-        if remote_policy == "hybrid":
-            return 0.7  # Hybrid is also good
+        if remote_policy in remote_scores:
+            return remote_scores[remote_policy]
+        if len(remote_types) > 0:
+            return 1.0
 
         return 0.0
 
     def filter_jobs(
-        self, jobs: List[Dict[str, Any]]
-    ) -> List[Tuple[Dict[str, Any], float, Dict[str, Any]]]:
+        self, jobs: list[dict[str, Any]]
+    ) -> list[tuple[dict[str, Any], float, dict[str, Any]]]:
         """Filter and score a list of jobs.
 
         Args:
@@ -446,7 +453,7 @@ class JobMatcher:
         return results
 
     def get_match_explanation(
-        self, job_data: Dict[str, Any], score: float, reasons: Dict[str, Any]
+        self, job_data: dict[str, Any], score: float, reasons: dict[str, Any]
     ) -> str:
         """Generate human-readable explanation of why job matched.
 
