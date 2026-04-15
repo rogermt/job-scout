@@ -37,7 +37,7 @@ def test_all_scrapers_registered():
     logger.info("=" * 60)
 
     available = list_scrapers()
-    expected = {"indeed", "reed", "totaljobs", "stackoverflow"}
+    expected = {"reed", "totaljobs", "cvlibrary", "cwjobs"}
 
     logger.info(f"Available scrapers: {available}")
 
@@ -89,10 +89,8 @@ def test_scraper_instantiation():
     logger.info("=" * 60)
 
     configs = {
-        "indeed": {"enabled": True, "region": "uk"},
         "reed": {"enabled": True, "region": "uk"},
         "totaljobs": {"enabled": True, "region": "uk"},
-        "stackoverflow": {"enabled": True, "region": "remote"},
     }
 
     for platform_name, config in configs.items():
@@ -162,17 +160,13 @@ def test_scrape_single_page():
     logger.info("=" * 60)
 
     configs = {
-        "indeed": {"enabled": True, "region": "uk"},
         "reed": {"enabled": True, "region": "uk"},
         "totaljobs": {"enabled": True, "region": "uk"},
-        "stackoverflow": {"enabled": True, "region": "remote"},
     }
 
     queries = {
-        "indeed": ("software engineer", "London"),
         "reed": ("data analyst", "Manchester"),
         "totaljobs": ("project manager", "remote"),
-        "stackoverflow": ("python developer", None),
     }
 
     for platform_name, config in configs.items():

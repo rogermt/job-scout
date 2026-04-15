@@ -172,11 +172,9 @@ class Settings(BaseSettings):
     # Platform-specific settings
     platforms: dict[str, PlatformConfig] = Field(
         default_factory=lambda: {
-            "indeed": PlatformConfig(enabled=True, region="uk"),
             "reed": PlatformConfig(enabled=True),
             "totaljobs": PlatformConfig(enabled=True),
             "cvlibrary": PlatformConfig(enabled=False),  # No scraper implemented
-            "stackoverflow": PlatformConfig(enabled=False),  # No scraper implemented
             "weworkremotely": PlatformConfig(enabled=False),  # No scraper implemented
             "remoteok": PlatformConfig(enabled=False),  # No scraper implemented
             "workingnomads": PlatformConfig(enabled=False),  # No scraper implemented
