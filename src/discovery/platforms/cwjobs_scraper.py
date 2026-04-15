@@ -5,9 +5,10 @@ from typing import Any, Optional
 from bs4 import BeautifulSoup, Tag
 
 from src.config_manager import PlatformConfig
-from .base_scraper import BaseScraper
+from .base_scraper import BaseScraper, register_scraper
 
 
+@register_scraper("cwjobs")
 class CwjobsScraper(BaseScraper):
     base_url = "https://www.cwjobs.co.uk"
     jobs_per_page = 20

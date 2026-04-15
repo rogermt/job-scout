@@ -1,22 +1,15 @@
-from typing import Dict, Type, Any
-from .totaljobs_scraper import TotaljobsScraper
-from .reed_scraper import ReedScraper
-from .cvlibrary_scraper import CvlibraryScraper
-from .cwjobs_scraper import CwjobsScraper
+"""Platform scraper registry.
 
-_scrapers: Dict[str, Type[Any]] = {
-    "totaljobs": TotaljobsScraper,
-    "reed": ReedScraper,
-    "cvlibrary": CvlibraryScraper,
-    "cwjobs": CwjobsScraper,
-}
+This package exposes a single registry API (decorator-based) implemented in
+base_scraper.py, following ForgeSyte registry pattern guidance.
+"""
 
+# Import modules for side-effect registration via @register_scraper
+from . import cvlibrary_scraper  # noqa: F401
+from . import cwjobs_scraper  # noqa: F401
+from . import reed_scraper  # noqa: F401
+from . import totaljobs_scraper  # noqa: F401
 
-def list_scrapers() -> list[str]:
-    return list(_scrapers.keys())
+from .base_scraper import BaseScraper, get_scraper, list_scrapers, register_scraper
 
-
-def get_scraper(name: str, config: Dict[str, Any]) -> Any:
-    if name not in _scrapers:
-        return None
-    return _scrapers[name](platform_name=name, config=config)
+__all__ = ["BaseScraper", "get_scraper", "list_scrapers", "register_scraper"]

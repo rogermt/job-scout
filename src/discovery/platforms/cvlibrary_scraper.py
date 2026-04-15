@@ -6,9 +6,10 @@ from urllib.parse import urlencode
 from bs4 import BeautifulSoup, Tag
 
 from src.config_manager import PlatformConfig
-from .base_scraper import BaseScraper
+from .base_scraper import BaseScraper, register_scraper
 
 
+@register_scraper("cvlibrary")
 class CvlibraryScraper(BaseScraper):
     base_url = "https://www.cvlibrary.co.uk"
     jobs_per_page = 20

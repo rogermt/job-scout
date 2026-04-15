@@ -6,9 +6,10 @@ from typing import Any, Optional
 from bs4 import BeautifulSoup, Tag
 
 from src.config_manager import PlatformConfig
-from .base_scraper import BaseScraper
+from .base_scraper import BaseScraper, register_scraper
 
 
+@register_scraper("totaljobs")
 class TotaljobsScraper(BaseScraper):
     """Scraper for Totaljobs job postings."""
 
