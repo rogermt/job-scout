@@ -52,12 +52,24 @@ class TestCvlibraryExtractJobListings:
 
 class TestCvlibraryParseJobListing:
     def test_parse_job_listing(self, scraper):
-        html = "<html><article><h3><a>Dev</a></h3></article></html>"
+        html = """<html><article class="job-result">
+            <h3 class="title"><a href="/job/123">Senior Python Developer</a></h3>
+            <span class="company-name">Tech Corp</span>
+            <span class="location">London, UK</span>
+            <span class="salary">GBP 50000 to 70000 per year</span>
+            <span class="posted-date">3 days ago</span>
+            <p class="summary">Great opportunity for a Python developer.</p>
+        </article></html>"""
         from bs4 import BeautifulSoup
 
         soup = BeautifulSoup(html, "html.parser")
         result = scraper.parse_job_listing(soup.article)
         assert result is not None
+        assert result["title"] == "Senior Python Developer"
+        assert result["company"] == "Tech Corp"
+        assert result["salary"]["currency"] == "GBP"
+        assert result["salary"]["min"] == 50000
+        assert result["salary"]["max"] == 70000
 
 
 class TestCvlibraryParseSalary:
@@ -66,8 +78,11 @@ class TestCvlibraryParseSalary:
         assert result["min"] is None
 
     def test_parse_salary_with_value(self, scraper):
-        result = scraper._parse_salary("£30,000 to £40,000")
+        result = scraper._parse_salary("30,000 to 40,000")
         assert result["currency"] == "GBP"
+        assert result["min"] == 30000
+        assert result["max"] == 40000
+        assert result["period"] == "yearly"
 
 
 class TestCvlibraryParsePostedDate:

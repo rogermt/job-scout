@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 import re
 from typing import Any, Optional
+from urllib.parse import urlencode
 
 from bs4 import BeautifulSoup, Tag
 
@@ -22,14 +23,12 @@ class CvlibraryScraper(BaseScraper):
         self, query: str, location: Optional[str] = None, **kwargs
     ) -> str:
         base_url = "https://www.cvlibrary.co.uk/search-jobs"
-        keywords = query.replace(" ", "+")
-        query_params = f"?keywords={keywords}"
+        params = {"keywords": query}
         if location:
-            loc = location.replace(" ", "+")
-            query_params += f"&location={loc}"
+            params["location"] = location
         if page := kwargs.get("page", 0):
-            query_params += f"&page={page}"
-        return f"{base_url}{query_params}"
+            params["page"] = page
+        return f"{base_url}?{urlencode(params)}"
 
     def get_search_url(
         self, query: str, location: Optional[str] = None, **kwargs
@@ -84,7 +83,7 @@ class CvlibraryScraper(BaseScraper):
         if not salary_text:
             return {"min": None, "max": None, "currency": "GBP", "period": "yearly"}
 
-        numbers = re.findall(r"[\n,]+", salary_text.replace(",", ""))
+        numbers = re.findall(r"\d+", salary_text.replace(",", ""))
         if numbers:
             min_salary = int(numbers[0])
             max_salary = int(numbers[-1]) if len(numbers) > 1 else min_salary

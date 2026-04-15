@@ -6,9 +6,6 @@ from unittest.mock import MagicMock, patch
 from src.config_manager import PlatformConfig
 from src.discovery.platforms.base_scraper import (
     BaseScraper,
-    register_scraper,
-    get_scraper,
-    list_scrapers,
 )
 
 
@@ -64,7 +61,9 @@ class TestMakeRequest:
         mock_request.return_value = mock_response
 
         _req = scraper._make_request("http://test.com", method="POST", data={})
-        mock_request.assert_called_once()
+        mock_request.assert_called_once_with(
+            "POST", "http://test.com", timeout=30, data={}
+        )
 
     @patch("requests.Session.request")
     def test_make_request_post_method(self, mock_request, scraper):
@@ -72,9 +71,13 @@ class TestMakeRequest:
         mock_response = MagicMock()
         mock_response.raise_for_status = MagicMock()
         mock_request.return_value = mock_response
-        _req = scraper._make_request("http://test.com")
+        _req = scraper._make_request(
+            "http://test.com", method="POST", data={"key": "value"}
+        )
         assert _req == mock_response
-        mock_request.assert_called_once()
+        mock_request.assert_called_once_with(
+            "POST", "http://test.com", timeout=30, data={"key": "value"}
+        )
 
 
 class TestFetchPage:
@@ -199,8 +202,26 @@ class TestParsePostedDate:
 
 
 class TestScraperRegistry:
+    def setup_method(self):
+        """Reset scraper registry before each test."""
+        import src.discovery.platforms.base_scraper as base_module
+
+        # Store original registry and create fresh one
+        self._original_scrapers = base_module._scrapers.copy()
+        base_module._scrapers = {}
+
+    def teardown_method(self):
+        """Restore original scraper registry after each test."""
+        import src.discovery.platforms.base_scraper as base_module
+
+        base_module._scrapers = self._original_scrapers
+
     def test_register_and_get_scraper(self, config):
         """Test registering and retrieving scraper."""
+        from src.discovery.platforms.base_scraper import (
+            register_scraper,
+            get_scraper,
+        )
 
         @register_scraper("test_platform")
         class TestScraperImpl(BaseScraper):
@@ -218,8 +239,46 @@ class TestScraperRegistry:
 
         scraper = get_scraper("test_platform", config)
         assert scraper is not None
+        import src.discovery.platforms.base_scraper as bm
+
+        assert "test_platform" in bm._scrapers
 
     def test_list_scrapers(self):
         """Test listing registered scrapers."""
+        from src.discovery.platforms.base_scraper import (
+            register_scraper,
+            list_scrapers,
+        )
+
+        @register_scraper("test_platform_1")
+        class TestScraper1(BaseScraper):
+            def get_search_url(self, query, location=None, **kwargs):
+                return "http://test.com"
+
+            def extract_job_listings(self, soup):
+                return []
+
+            def parse_job_listing(self, element):
+                return {}
+
+            def get_job_details(self, job_url):
+                return {}
+
+        @register_scraper("test_platform_2")
+        class TestScraper2(BaseScraper):
+            def get_search_url(self, query, location=None, **kwargs):
+                return "http://test.com"
+
+            def extract_job_listings(self, soup):
+                return []
+
+            def parse_job_listing(self, element):
+                return {}
+
+            def get_job_details(self, job_url):
+                return {}
+
         scrapers = list_scrapers()
         assert isinstance(scrapers, list)
+        assert "test_platform_1" in scrapers
+        assert "test_platform_2" in scrapers
