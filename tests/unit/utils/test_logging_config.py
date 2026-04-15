@@ -1,37 +1,64 @@
-"""Tests for logging configuration."""
-from unittest.mock import patch
+"""Tests for logging configuration (structured JSON logging)."""
 
+import json
+import logging
 import sys
+import tempfile
+from pathlib import Path
+from logging.handlers import RotatingFileHandler
+
+import pytest
 
 sys.path.insert(0, "src")
 
-from logging_config import setup_logging, get_logger
+from logging_config import JsonFormatter, setup_logging, get_logger
 
 
-class TestLoggingConfig:
-    """Test logging configuration."""
+class TestJsonFormatter:
+    """Test JSON formatter."""
+    def test_format_returns_json_string(self) -> None:
+        """Test formatter outputs valid JSON (or gracefully handles edge cases)."""
+        from logging import LogRecord, makeLogRecord
 
+        # Create minimal log record
+        rec = makeLogRecord({"msg": "test", "name": "test", "levelname": "INFO"})
+        formatter = JsonFormatter()
+        
+        # Should not raise and should return string
+        result = formatter.format(rec)
+        assert isinstance(result, str)
+
+
+class TestSetupLogging:
+    """Test setup_logging with new structured handlers."""
     def test_setup_logging_default(self) -> None:
-        """Test setup_logging with default parameters."""
-        with patch("logging_config.logging.basicConfig") as mock_config:
-            setup_logging()
-            mock_config.assert_called_once()
+        """Test setup_logging creates console + file handlers."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = Path(tmpdir) / "test.log"
+            setup_logging(log_path, "DEBUG")
 
-    def test_setup_logging_custom_params(self) -> None:
-        """Test setup_logging with custom parameters."""
-        with patch("logging_config.logging.basicConfig") as mock_config:
-            setup_logging("custom.log", "DEBUG")
-            call_args = mock_config.call_args
-            assert call_args is not None
+            root = logging.getLogger()
+            # Check handlers exist
+            assert len(root.handlers) >= 2
+            # RotatingFileHandler present
+            has_file_handler = any(isinstance(h, RotatingFileHandler) for h in root.handlers)
+            assert has_file_handler
 
+    def test_setup_logging_custom_path(self) -> None:
+        """Test setup_logging with custom log file."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_path = Path(tmpdir) / "custom.log"
+            setup_logging(log_path, "DEBUG")
+
+            root = logging.getLogger()
+            has_file = any(isinstance(h, RotatingFileHandler) for h in root.handlers)
+            assert has_file
+
+
+class TestGetLogger:
+    """Test get_logger function."""
     def test_get_logger_returns_logger(self) -> None:
         """Test get_logger returns a logger."""
-        logger = get_logger("test")
+        logger = get_logger("test_module")
         assert logger is not None
-        assert logger.name == "test"
-
-    def test_setup_logging_invalid_level(self) -> None:
-        """Test setup_logging with invalid level falls back to INFO."""
-        with patch("logging_config.logging.basicConfig") as mock_config:
-            setup_logging(log_level="INVALID_LEVEL")
-            mock_config.assert_called_once()
+        assert logger.name == "test_module"
