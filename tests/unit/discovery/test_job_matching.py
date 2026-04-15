@@ -8,7 +8,7 @@ from src.discovery.platforms.job_matching import (
     create_matcher,
     get_settings,
     get_job_preferences,
-    _init_logger,
+    
 )
 
 

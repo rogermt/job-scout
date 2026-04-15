@@ -1,60 +1,67 @@
-"""Database tracking module.
+"""Database management (SQLAlchemy SQLite)."""
+from __future__ import annotations
 
-Following Python Standards (PYTHON_STANDARDS.md) for database implementation.
-Uses SQLAlchemy with SQLite for local storage.
-"""
+from contextlib import contextmanager
+from pathlib import Path
+from typing import Iterator
 
-from typing import Optional
+from sqlalchemy import create_engine
+from sqlalchemy.engine import Engine
+from sqlalchemy.orm import Session, sessionmaker
 
-from tenacity import retry, stop_after_attempt, wait_exponential
-
-# Database functionality needs implementation
-_db_engine = None
-_db_session = None
+from src.config_manager import DatabaseConfig
+from src.tracking.models import Base
 
 
-# Retry pattern - follow PYTHON_STANDARDS.md (lines 295-313)
-# Wrap all database operations in retry logic for resilience
-@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
-def init_database(db_config=None) -> Optional[object]:
-    """Initialize database connection.
+class DatabaseManager:
+    """SQLAlchemy SQLite database manager."""
 
-    Following PYTHON_STANDARDS.md recommendations:
-    - Use SQLite for local development/testing
-    - Use in-memory database (:memory:) for testing
-    - Wrap in retry logic for resilience
+    def __init__(self, config: DatabaseConfig) -> None:
+        db_path = Path(config.path)
+        db_path.parent.mkdir(parents=True, exist_ok=True)
+
+        self.engine: Engine = create_engine(
+            f"sqlite:///{db_path}", echo=bool(config.echo)
+        )
+        self.SessionLocal = sessionmaker(
+            bind=self.engine, autoflush=False, autocommit=False
+        )
+
+    def init_schema(self) -> None:
+        """Create all tables."""
+        Base.metadata.create_all(self.engine)
+
+    @contextmanager
+    def session(self) -> Iterator[Session]:
+        """Context manager for database sessions."""
+        session = self.SessionLocal()
+        try:
+            yield session
+            session.commit()
+        except Exception:
+            session.rollback()
+            raise
+        finally:
+            session.close()
+
+
+def init_database(db_config: DatabaseConfig) -> DatabaseManager:
+    """Initialize database and create schema.
 
     Args:
-        db_config: Optional database configuration settings.
+        db_config: Database configuration
 
     Returns:
-        Database session object or None if not implemented.
-
-    Retry Schedule (if connection fails):
-    - First retry: 2 seconds
-    - Second retry: 4 seconds (up to max=10)
-    - Third retry: 8 seconds (capped at max=10)
+        DatabaseManager instance
     """
-    global _db_engine, _db_session
-
-    # Placeholder - full implementation needs DatabaseStore/DatabaseConnection classes
-    # from PYTHON_STANDARDS.md (lines 185-281)
-    # Example with SQLite:
-    # from sqlalchemy import create_engine
-    # engine = create_engine("sqlite:///job_scout.db")
-    # Session = sessionmaker(bind=engine)
-    # _db_session = Session()
-
-    _db_engine = None
-    _db_session = None
-
-    return _db_session
+    manager = DatabaseManager(db_config)
+    manager.init_schema()
+    return manager
 
 
 def get_session():
-    """Get current database session.
+    """Get current database session (deprecated - use manager.session())."""
+    return None
 
-    Returns:
-        Current database session or None.
-    """
-    return _db_session
+
+__all__ = ["DatabaseManager", "init_database", "get_session"]

@@ -11,7 +11,7 @@ This module provides intelligent job matching based on user preferences includin
 import logging
 import re
 from decimal import Decimal
-from typing import Any
+from typing import Any, Optional
 
 from src.config_manager import JobPreferences
 
