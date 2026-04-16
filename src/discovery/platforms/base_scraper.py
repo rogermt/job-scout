@@ -1,10 +1,13 @@
 """Base scraper class for all job discovery platforms."""
 
 import logging
+import re
 import time
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Any, Generator, Optional
+from decimal import Decimal
+from enum import Enum
+from typing import Any, Generator, NotRequired, Optional, TypedDict
 
 import requests
 from bs4 import BeautifulSoup, Tag
@@ -13,6 +16,38 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 from src.config_manager import PlatformConfig
 
 logger = logging.getLogger(__name__)
+
+
+class SalaryPeriod(str, Enum):
+    """Salary period enumeration."""
+
+    YEARLY = "yearly"
+    MONTHLY = "monthly"
+    WEEKLY = "weekly"
+    DAILY = "daily"
+    HOURLY = "hourly"
+
+
+# Period-to-yearly multipliers (data-driven, no if-elif ladder)
+# Using only string keys since SalaryPeriod is a str-subclass, enum values match string lookups
+PERIOD_TO_YEARLY_MULTIPLIERS: dict[str | None, Decimal] = {
+    "yearly": Decimal("1"),
+    "monthly": Decimal("12"),
+    "weekly": Decimal("52"),
+    "daily": Decimal("260"),
+    "hourly": Decimal("2080"),
+    None: Decimal("1"),
+}
+
+
+class SalaryData(TypedDict, total=False):
+    """Structured salary data with Decimal precision."""
+
+    min: Decimal | None
+    max: Decimal | None
+    currency: str | None
+    period: str | None
+    original: NotRequired[str]
 
 
 class BaseScraper(ABC):
@@ -115,34 +150,90 @@ class BaseScraper(ABC):
         pagination_links = soup.select("a[href*='page'], a[href*='next']")
         return len(pagination_links) > 0
 
-    def parse_salary(self, salary_text: str) -> dict[str, Any]:
-        """Parse salary text into min, max, and currency."""
-        if not salary_text:
-            return {"min": None, "max": None, "currency": None, "period": None}
-        import re
+    def parse_salary(self, salary_text: str) -> SalaryData:
+        """Parse salary text into Decimal min/max + currency + period.
 
-        currency = "GBP"
-        if "$" in salary_text:
-            currency = "USD"
-        elif "€" in salary_text:
-            currency = "EUR"
-        text = (
+        Args:
+            salary_text: Raw salary string (e.g., "£30k - £40k per annum")
+
+        Returns:
+            SalaryData with Decimal precision for financial values
+        """
+        if not salary_text:
+            return {
+                "min": None,
+                "max": None,
+                "currency": None,
+                "period": None,
+                "original": "",
+            }
+
+        text_lower = salary_text.lower()
+
+        # Currency detection (data-driven)
+        currency_indicators = {
+            "GBP": ["£", "gbp"],
+            "USD": ["$", "usd"],
+            "EUR": ["€", "eur"],
+        }
+        currency: str | None = None
+        for curr, indicators in currency_indicators.items():
+            if any(ind in salary_text or ind in text_lower for ind in indicators):
+                currency = curr
+                break
+
+        # Period detection (data-driven)
+        period_keywords = {
+            SalaryPeriod.DAILY: ["per day", "/day", "daily"],
+            SalaryPeriod.WEEKLY: ["per week", "/week", "weekly"],
+            SalaryPeriod.MONTHLY: ["per month", "/month", "monthly"],
+            SalaryPeriod.HOURLY: ["per hour", "/hour", "hourly"],
+        }
+        period: str = SalaryPeriod.YEARLY.value  # Default
+        for prd, keywords in period_keywords.items():
+            if any(kw in text_lower for kw in keywords):
+                period = prd.value
+                break
+
+        # Normalize and extract numbers
+        normalized = (
             salary_text.replace(",", "")
             .replace("£", "")
             .replace("$", "")
             .replace("€", "")
         )
-        numbers = re.findall(r"(\d+(?:\.\d+)?)", text)
-        if numbers:
-            min_sal = float(numbers[0])
-            max_sal = float(numbers[-1]) if len(numbers) > 1 else min_sal
+
+        # Remove percentage tokens (e.g. "10% bonus") before salary extraction
+        cleaned = re.sub(r"\d+(?:\.\d+)?\s*%", "", normalized)
+        # Capture numbers with optional k/m suffix
+        matches = re.findall(r"(\d+(?:\.\d+)?)\s*([kKmM])?", cleaned)
+        amounts: list[Decimal] = []
+        for value, suffix in matches:
+            d = Decimal(value)
+            if suffix and suffix.lower() == "k":
+                d *= Decimal("1000")
+            elif suffix and suffix.lower() == "m":
+                d *= Decimal("1000000")
+            amounts.append(d)
+
+        if not amounts:
             return {
-                "min": min_sal,
-                "max": max_sal,
+                "min": None,
+                "max": None,
                 "currency": currency,
-                "period": "yearly",
+                "period": period,
+                "original": salary_text,
             }
-        return {"min": None, "max": None, "currency": currency, "period": None}
+
+        min_sal = min(amounts)
+        max_sal = max(amounts)
+        return {
+            "min": min_sal,
+            "max": max_sal,
+            "currency": currency,
+            "period": period,
+            "original": salary_text,
+        }
 
     def parse_posted_date(self, text: str) -> Optional[datetime]:
         """Parse 'posted X days ago' text into datetime."""
@@ -172,6 +263,8 @@ def register_scraper(platform_name: str):
     """Decorator to register a scraper class."""
 
     def decorator(cls: type["BaseScraper"]) -> type["BaseScraper"]:
+        if not issubclass(cls, BaseScraper):
+            raise TypeError(f"{cls.__name__} must be a subclass of BaseScraper")
         _scrapers[platform_name] = cls
         logger.info("Scraper registered", extra={"platform": platform_name})
         return cls

@@ -1,34 +1,108 @@
+"""Logging configuration (structured JSON logs).
+
+ForgeSyte standard: no print, structured logging, production-friendly handlers.
+"""
+
+from __future__ import annotations
+
+import json
 import logging
-import os
+from logging.handlers import RotatingFileHandler
+from pathlib import Path
+from typing import Any
 
 
-def setup_logging(log_file: str = "logs/job_scout.log", log_level: str = "DEBUG"):
-    """Configure logging with file and console handlers.
+class JsonFormatter(logging.Formatter):
+    """Simple JSON formatter for structured logs."""
 
-    Following PYTHON_STANDARDS.md recommendations.
+    def format(self, record: logging.LogRecord) -> str:  # noqa: A003
+        payload: dict[str, Any] = {
+            "ts": self.formatTime(record, datefmt="%Y-%m-%dT%H:%M:%S%z"),
+            "level": record.levelname,
+            "logger": record.name,
+            "message": record.getMessage(),
+        }
+
+        # Include `extra={...}` fields (best-effort)
+        reserved = {
+            "name",
+            "msg",
+            "args",
+            "levelname",
+            "levelno",
+            "pathname",
+            "filename",
+            "module",
+            "exc_info",
+            "exc_text",
+            "stack_info",
+            "lineno",
+            "funcName",
+            "created",
+            "msecs",
+            "relativeCreated",
+            "thread",
+            "threadName",
+            "processName",
+            "process",
+            "message",
+            "asctime",
+            "taskName",
+        }
+        for k, v in record.__dict__.items():
+            if k not in reserved and k not in payload:
+                payload[k] = v
+
+        if record.exc_info:
+            payload["exc_info"] = self.formatException(record.exc_info)
+
+        return json.dumps(payload, default=str)
+
+
+def setup_logging(
+    log_file: str | Path = Path("logs/job_scout.log"), log_level: str = "INFO"
+) -> None:
+    """Configure root logging with console + rotating file handlers.
 
     Args:
-        log_file: Path to log file (default: logs/job_scout.log)
-        log_level: Log level (default: DEBUG for debugging)
+        log_file: Path to log file (pathlib.Path or string)
+        log_level: Log level (DEBUG, INFO, WARNING, ERROR)
     """
-    # Create logs directory if it doesn't exist
-    log_dir = os.path.dirname(log_file)
-    if log_dir and not os.path.exists(log_dir):
-        os.makedirs(log_dir, exist_ok=True)
+    log_path = Path(log_file)
+    log_path.parent.mkdir(parents=True, exist_ok=True)
 
-    level = getattr(logging, log_level.upper(), logging.DEBUG)
-    logging.basicConfig(
-        level=level,
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-        handlers=[
-            logging.FileHandler(log_file),
-            logging.StreamHandler(),
-        ],
+    level = getattr(logging, log_level.upper(), logging.INFO)
+
+    root = logging.getLogger()
+    root.setLevel(level)
+    # Close and remove handlers properly to flush buffers and release file handles
+    for handler in root.handlers[:]:
+        try:
+            handler.close()
+        except Exception:
+            pass  # Best effort
+        finally:
+            root.removeHandler(handler)
+
+    formatter = JsonFormatter()
+
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(level)
+    console_handler.setFormatter(formatter)
+
+    file_handler = RotatingFileHandler(
+        log_path, maxBytes=10 * 1024 * 1024, backupCount=5, encoding="utf-8"
     )
-    logger = logging.getLogger(__name__)
-    logger.debug(f"Logging configured: level={log_level}, file={log_file}")
+    file_handler.setLevel(level)
+    file_handler.setFormatter(formatter)
+
+    root.addHandler(console_handler)
+    root.addHandler(file_handler)
 
 
 def get_logger(name: str) -> logging.Logger:
     """Get a logger instance."""
     return logging.getLogger(name)
+
+
+__all__ = ["get_logger", "setup_logging"]

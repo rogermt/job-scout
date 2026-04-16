@@ -1,4 +1,6 @@
 """Tests for base_scraper module."""
+from decimal import Decimal
+
 import pytest
 import time
 from unittest.mock import MagicMock, patch
@@ -169,14 +171,16 @@ class TestParseSalary:
         assert result["currency"] == "EUR"
 
     def test_parse_salary_range(self, scraper):
+        """Test salary range - 30k means £30,000 (not £30)."""
         result = scraper.parse_salary("£30k to £40k")
-        assert result["min"] == 30.0
-        assert result["max"] == 40.0
+        # "30k" = 30 * 1000 = 30000 in Decimal (correct financial interpretation)
+        assert result["min"] == Decimal("30000")
+        assert result["max"] == Decimal("40000")
 
     def test_parse_salary_single(self, scraper):
         result = scraper.parse_salary("£35,000")
-        assert result["min"] == 35000
-        assert result["max"] == 35000
+        assert result["min"] == Decimal("35000")
+        assert result["max"] == Decimal("35000")
 
 
 class TestParsePostedDate:
