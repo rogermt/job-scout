@@ -24,15 +24,9 @@ CURRENCY_TO_GBP: dict[str, Decimal] = {
     "EUR": Decimal("0.85"),
 }
 
-# Period-to-yearly multipliers (data-driven, no if-elif ladder)
-PERIOD_TO_YEARLY: dict[str | None, Decimal] = {
-    "yearly": Decimal("1"),
-    "monthly": Decimal("12"),
-    "weekly": Decimal("52"),
-    "daily": Decimal("260"),
-    "hourly": Decimal("2080"),
-    None: Decimal("1"),
-}
+from src.discovery.platforms.base_scraper import (
+    PERIOD_TO_YEARLY_MULTIPLIERS,
+)
 
 # Salary ratio scoring thresholds (data-driven, tunable)
 SALARY_RATIO_SCORES: list[tuple[float, float]] = [
@@ -352,7 +346,7 @@ class JobMatcher:
         if currency is None or currency.upper() not in CURRENCY_TO_GBP:
             return 0.5
         fx_rate = CURRENCY_TO_GBP[currency.upper()]
-        period_multiplier = PERIOD_TO_YEARLY.get(period, Decimal("1"))
+        period_multiplier = PERIOD_TO_YEARLY_MULTIPLIERS.get(period, Decimal("1"))
 
         min_salary_gbp = min_salary * fx_rate * period_multiplier
 

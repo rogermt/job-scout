@@ -77,8 +77,12 @@ def setup_logging(
     root.setLevel(level)
     # Close and remove handlers properly to flush buffers and release file handles
     for handler in root.handlers[:]:
-        handler.close()
-        root.removeHandler(handler)
+        try:
+            handler.close()
+        except Exception:
+            pass  # Best effort
+        finally:
+            root.removeHandler(handler)
 
     formatter = JsonFormatter()
 

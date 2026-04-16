@@ -29,12 +29,8 @@ class SalaryPeriod(str, Enum):
 
 
 # Period-to-yearly multipliers (data-driven, no if-elif ladder)
-PERIOD_TO_YEARLY_MULTIPLIERS: dict[SalaryPeriod | str | None, Decimal] = {
-    SalaryPeriod.YEARLY: Decimal("1"),
-    SalaryPeriod.MONTHLY: Decimal("12"),
-    SalaryPeriod.WEEKLY: Decimal("52"),
-    SalaryPeriod.DAILY: Decimal("260"),
-    SalaryPeriod.HOURLY: Decimal("2080"),
+# Using only string keys since SalaryPeriod is a str-subclass, enum values match string lookups
+PERIOD_TO_YEARLY_MULTIPLIERS: dict[str | None, Decimal] = {
     "yearly": Decimal("1"),
     "monthly": Decimal("12"),
     "weekly": Decimal("52"),
@@ -267,6 +263,8 @@ def register_scraper(platform_name: str):
     """Decorator to register a scraper class."""
 
     def decorator(cls: type["BaseScraper"]) -> type["BaseScraper"]:
+        if not issubclass(cls, BaseScraper):
+            raise TypeError(f"{cls.__name__} must be a subclass of BaseScraper")
         _scrapers[platform_name] = cls
         logger.info("Scraper registered", extra={"platform": platform_name})
         return cls
