@@ -15,7 +15,7 @@ from typing import Any
 class JsonFormatter(logging.Formatter):
     """Simple JSON formatter for structured logs."""
 
-    def formatMessage(self, record: logging.LogRecord) -> str:  # noqa: N802
+    def format(self, record: logging.LogRecord) -> str:  # noqa: A003
         payload: dict[str, Any] = {
             "ts": self.formatTime(record, datefmt="%Y-%m-%dT%H:%M:%S%z"),
             "level": record.levelname,
@@ -45,6 +45,9 @@ class JsonFormatter(logging.Formatter):
             "threadName",
             "processName",
             "process",
+            "message",
+            "asctime",
+            "taskName",
         }
         for k, v in record.__dict__.items():
             if k not in reserved and k not in payload:
