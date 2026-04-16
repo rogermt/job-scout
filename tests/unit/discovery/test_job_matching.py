@@ -8,7 +8,6 @@ from src.discovery.platforms.job_matching import (
     create_matcher,
     get_settings,
     get_job_preferences,
-    
 )
 
 
@@ -46,6 +45,7 @@ class TestModuleFunctions:
         prefs.remote_only = False
         prefs.locations = []
         from src.config_manager import SalaryPreferences
+
         prefs.salary = SalaryPreferences(min_gbp=30000)
         prefs.get = lambda k, d=None: {"min_gbp": 30000}.get(k, d)
         prefs.contract_types = []
@@ -223,6 +223,7 @@ class TestModuleFunctions:
         prefs.remote_only = False
         prefs.locations = []
         from src.config_manager import SalaryPreferences
+
         prefs.salary = SalaryPreferences(min_gbp=30000)
         prefs.get = lambda k, d=None: {"min_gbp": 30000}.get(k, d)
         prefs.contract_types = []
@@ -250,6 +251,7 @@ class TestModuleFunctions:
         prefs.remote_only = False
         prefs.locations = []
         from src.config_manager import SalaryPreferences
+
         prefs.salary = SalaryPreferences(min_gbp=30000)
         prefs.get = lambda k, d=None: {"min_gbp": 30000}.get(k, d)
         prefs.contract_types = []
@@ -343,6 +345,7 @@ class TestMatchJob:
         prefs.company_sizes = []
         prefs.locations = []
         from src.config_manager import SalaryPreferences
+
         prefs.salary = SalaryPreferences(min_gbp=40000)
         prefs.get.return_value = 40.0
         return prefs
@@ -514,6 +517,7 @@ class TestScoreSalary:
     def matcher(self) -> JobMatcher:
         """Create matcher with salary threshold."""
         from src.config_manager import SalaryPreferences
+
         prefs = MagicMock()
         prefs.titles = []
         prefs.keywords = []

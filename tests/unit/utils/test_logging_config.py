@@ -1,13 +1,11 @@
 """Tests for logging configuration (structured JSON logging)."""
 
-import json
 import logging
 import sys
 import tempfile
 from pathlib import Path
 from logging.handlers import RotatingFileHandler
 
-import pytest
 
 sys.path.insert(0, "src")
 
@@ -16,14 +14,15 @@ from logging_config import JsonFormatter, setup_logging, get_logger
 
 class TestJsonFormatter:
     """Test JSON formatter."""
+
     def test_format_returns_json_string(self) -> None:
         """Test formatter outputs valid JSON (or gracefully handles edge cases)."""
-        from logging import LogRecord, makeLogRecord
+        from logging import makeLogRecord
 
         # Create minimal log record
         rec = makeLogRecord({"msg": "test", "name": "test", "levelname": "INFO"})
         formatter = JsonFormatter()
-        
+
         # Should not raise and should return string
         result = formatter.format(rec)
         assert isinstance(result, str)
@@ -31,6 +30,7 @@ class TestJsonFormatter:
 
 class TestSetupLogging:
     """Test setup_logging with new structured handlers."""
+
     def test_setup_logging_default(self) -> None:
         """Test setup_logging creates console + file handlers."""
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -41,7 +41,9 @@ class TestSetupLogging:
             # Check handlers exist
             assert len(root.handlers) >= 2
             # RotatingFileHandler present
-            has_file_handler = any(isinstance(h, RotatingFileHandler) for h in root.handlers)
+            has_file_handler = any(
+                isinstance(h, RotatingFileHandler) for h in root.handlers
+            )
             assert has_file_handler
 
     def test_setup_logging_custom_path(self) -> None:
@@ -57,6 +59,7 @@ class TestSetupLogging:
 
 class TestGetLogger:
     """Test get_logger function."""
+
     def test_get_logger_returns_logger(self) -> None:
         """Test get_logger returns a logger."""
         logger = get_logger("test_module")
