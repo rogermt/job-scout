@@ -13,10 +13,10 @@ import click
 from rich.console import Console
 from rich.table import Table
 
-from config_manager import get_settings
+from src.config_manager import get_settings
 from src.discovery.platforms import get_scraper, list_scrapers
-from logging_config import setup_logging
-from tracking.database import init_database
+from src.logging_config import setup_logging
+from src.tracking.database import init_database
 
 # Import database models
 
