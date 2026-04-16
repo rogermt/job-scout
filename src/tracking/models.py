@@ -5,7 +5,7 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Optional
 
-from sqlalchemy import DateTime, Numeric, String, Text
+from sqlalchemy import DateTime, Numeric, String, Text, UniqueConstraint
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -19,6 +19,14 @@ class Job(Base):
     """Job model for tracking discovered jobs."""
 
     __tablename__ = "jobs"
+
+    __table_args__ = (
+        UniqueConstraint(
+            "platform",
+            "platform_id",
+            name="uq_jobs_platform_platform_id",
+        ),
+    )
 
     job_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
 

@@ -1,5 +1,6 @@
 """Tests for logging configuration (structured JSON logging)."""
 
+import json
 import logging
 import sys
 import tempfile
@@ -26,6 +27,11 @@ class TestJsonFormatter:
         # Should not raise and should return string
         result = formatter.format(rec)
         assert isinstance(result, str)
+        # Validate it's valid JSON with expected structure
+        payload = json.loads(result)
+        assert payload["message"] == "test"
+        assert payload["level"] == "INFO"
+        assert payload["logger"] == "test"
 
 
 class TestSetupLogging:

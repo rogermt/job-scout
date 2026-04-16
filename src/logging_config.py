@@ -15,7 +15,7 @@ from typing import Any
 class JsonFormatter(logging.Formatter):
     """Simple JSON formatter for structured logs."""
 
-    def _format(self, record: logging.LogRecord) -> str:
+    def formatMessage(self, record: logging.LogRecord) -> str:  # noqa: N802
         payload: dict[str, Any] = {
             "ts": self.formatTime(record, datefmt="%Y-%m-%dT%H:%M:%S%z"),
             "level": record.levelname,
@@ -72,7 +72,10 @@ def setup_logging(
 
     root = logging.getLogger()
     root.setLevel(level)
-    root.handlers.clear()
+    # Close and remove handlers properly to flush buffers and release file handles
+    for handler in root.handlers[:]:
+        handler.close()
+        root.removeHandler(handler)
 
     formatter = JsonFormatter()
 
@@ -95,4 +98,4 @@ def get_logger(name: str) -> logging.Logger:
     return logging.getLogger(name)
 
 
-__all__ = ["setup_logging", "get_logger"]
+__all__ = ["get_logger", "setup_logging"]

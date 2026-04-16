@@ -207,8 +207,10 @@ class BaseScraper(ABC):
             .replace("€", "")
         )
 
+        # Remove percentage tokens (e.g. "10% bonus") before salary extraction
+        cleaned = re.sub(r"\d+(?:\.\d+)?\s*%", "", normalized)
         # Capture numbers with optional k/m suffix
-        matches = re.findall(r"(\d+(?:\.\d+)?)\s*([kKmM])?", normalized)
+        matches = re.findall(r"(\d+(?:\.\d+)?)\s*([kKmM])?", cleaned)
         amounts: list[Decimal] = []
         for value, suffix in matches:
             d = Decimal(value)
@@ -227,8 +229,8 @@ class BaseScraper(ABC):
                 "original": salary_text,
             }
 
-        min_sal = amounts[0]
-        max_sal = amounts[-1] if len(amounts) > 1 else amounts[0]
+        min_sal = min(amounts)
+        max_sal = max(amounts)
         return {
             "min": min_sal,
             "max": max_sal,

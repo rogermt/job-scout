@@ -332,7 +332,7 @@ class JobMatcher:
 
         salary = job_data.get("salary") or {}
         min_salary_raw = salary.get("min")
-        currency = str(salary.get("currency", "GBP"))
+        currency = salary.get("currency")
         period = salary.get("period")
 
         if min_salary_raw is None:
@@ -346,7 +346,10 @@ class JobMatcher:
         )
 
         # Convert to yearly GBP using data-driven mappings
-        fx_rate = CURRENCY_TO_GBP.get(currency, Decimal("1.0"))
+        # Unknown currency = neutral score
+        if currency is None or currency.upper() not in CURRENCY_TO_GBP:
+            return 0.5
+        fx_rate = CURRENCY_TO_GBP[currency.upper()]
         period_multiplier = PERIOD_TO_YEARLY.get(period, Decimal("1"))
 
         min_salary_gbp = min_salary * fx_rate * period_multiplier
