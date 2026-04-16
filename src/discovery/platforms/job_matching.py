@@ -10,7 +10,7 @@ This module provides intelligent job matching based on user preferences includin
 """
 import logging
 import re
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from typing import Any, Optional
 
 from src.config_manager import JobPreferences
@@ -339,11 +339,13 @@ class JobMatcher:
             return 0.5  # Unknown salary = neutral
 
         # Ensure Decimal arithmetic
-        min_salary = (
-            min_salary_raw
-            if isinstance(min_salary_raw, Decimal)
-            else Decimal(str(min_salary_raw))
-        )
+        if isinstance(min_salary_raw, Decimal):
+            min_salary = min_salary_raw
+        else:
+            try:
+                min_salary = Decimal(str(min_salary_raw))
+            except (InvalidOperation, ValueError):
+                return 0.5  # Unparseable salary = neutral
 
         # Convert to yearly GBP using data-driven mappings
         # Unknown currency = neutral score
