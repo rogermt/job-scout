@@ -7,7 +7,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from decimal import Decimal
 from enum import Enum
-from typing import Any, NotRequired, Optional, TypedDict
+from typing import Any, Generator, NotRequired, Optional, TypedDict
 
 import requests
 from bs4 import BeautifulSoup, Tag
@@ -130,35 +130,24 @@ class BaseScraper(ABC):
 
     def scrape_jobs(
         self, query: str, location: Optional[str] = None, max_pages: int = 5
-    ) -> list[dict[str, Any]]:
-        """Scrape jobs from the platform. Returns list for compatibility."""
-        jobs = []
+    ) -> Generator[dict[str, Any], None, None]:
+        """Scrape jobs from the platform.
+
+        Uses lazy generator for memory efficiency - yields one job at a time.
+        Only fetches next page when previous is consumed.
+        """
         current_page = 0
         while current_page < max_pages:
             search_url = self.get_search_url(query, location, page=current_page)
             soup = self.fetch_page(search_url)
             if not soup:
-                # If no response, try sample fallback
-                if hasattr(self, "_get_sample_jobs"):
-                    sample_jobs = self._get_sample_jobs(query, location)
-                    if sample_jobs:
-                        return sample_jobs
                 break
             job_elements = self.extract_job_listings(soup)
-            if not job_elements:
-                # Try sample fallback if no jobs found
-                if hasattr(self, "_get_sample_jobs"):
-                    sample_jobs = self._get_sample_jobs(query, location)
-                    if sample_jobs:
-                        return sample_jobs
-                break
             for element in job_elements:
                 job_data = self.parse_job_listing(element)
                 if job_data:
-                    jobs.append(job_data)
+                    yield job_data
             current_page += 1
-
-        return jobs
 
     def has_next_page(self, soup: BeautifulSoup, current_page: int) -> bool:
         """Check if there are more pages to scrape."""
