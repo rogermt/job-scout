@@ -131,7 +131,11 @@ class BaseScraper(ABC):
     def scrape_jobs(
         self, query: str, location: Optional[str] = None, max_pages: int = 5
     ) -> Generator[dict[str, Any], None, None]:
-        """Scrape jobs from the platform."""
+        """Scrape jobs from the platform.
+
+        Uses lazy generator for memory efficiency - yields one job at a time.
+        Only fetches next page when previous is consumed.
+        """
         current_page = 0
         while current_page < max_pages:
             search_url = self.get_search_url(query, location, page=current_page)
