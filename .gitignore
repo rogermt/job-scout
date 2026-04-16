@@ -209,3 +209,5 @@ __marimo__/
 # Backup files
 *.bak
 MagicMock/
+.agents_tmp/
+.agent_tmp/
