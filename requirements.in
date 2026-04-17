@@ -15,3 +15,6 @@ pytest>=7.0.0
 ruff>=0.1.0
 black>=23.0.0
 mypy>=1.0.0
+
+# Pin ipython for Python 3.11 compatibility
+ipython<9.12.0
