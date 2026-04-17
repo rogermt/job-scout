@@ -1,61 +1,26 @@
 """Live Reed.co.uk integration test.
 
-Tests against REAL Reed.co.uk to catch selector changes.
-NOTE: This test may fail if Reed changes their HTML structure.
+Tests against REAL Reed.co.uk to verify selectors work.
+NOTE: Reed.co.uk uses JS rendering so we use browser (Scrapling) not HTTP.
 """
 
 import pytest
-import requests
-from bs4 import BeautifulSoup
+from scrapling.fetchers import StealthySession
 
 
 @pytest.mark.integration
-@pytest.mark.skip(reason="Reed.co.uk uses JS rendering - HTTP requests don't get job listings")
 def test_reed_live_scraping() -> None:
-    """Test scraping real Reed.co.uk to verify selectors work."""
+    """Test scraping real Reed.co.uk using browser to verify selectors work."""
     url = "https://www.reed.co.uk/jobs?keywords=python&location=london"
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-    }
+    
+    with StealthySession(headless=True) as session:
+        page = session.fetch(url, timeout=30000, network_idle=True)
+        assert page is not None, "Page should load"
+        assert page.status == 200, f"Expected 200, got {page.status}"
 
-    resp = requests.get(url, headers=headers, timeout=30)
-    assert resp.status_code == 200, f"Expected 200, got {resp.status_code}"
-
-    soup = BeautifulSoup(resp.text, "html.parser")
-
-    # Current selectors in reed_scraper.py
-    job_elements = soup.select("article.job-result, article.job-card")
-
-    print("\n=== DEBUG ===")
-    print(f"Status: {resp.status_code}")
-    print(f"Content length: {len(resp.text)}")
-    print(
-        f"Selectors 'article.job-result, article.job-card' found: {len(job_elements)}"
-    )
-
-    if not job_elements:
-        # Try alternative selectors
-        alt_selectors = [
-            ".job-card",
-            ".job-result",
-            "[data-job-id]",
-            ".results-item",
-            ".job-item",
-        ]
-        for sel in alt_selectors:
-            found = soup.select(sel)
-            print(f"  Alternative '{sel}': {len(found)}")
-
-    # Print snippet of HTML structure
-    if job_elements:
-        print("\nFirst job element:")
-        print(job_elements[0].prettify()[:500])
-    else:
-        print("\nNo job elements found. HTML snippet:")
-        print(resp.text[3000:6000])
-
-    # Assert jobs found
-    assert len(job_elements) > 0, "No job elements found - selectors may have changed"
+        # Current selectors in reed_scraper.py
+        articles = page.css("article.job-result, article.job-card, article")
+        assert len(articles) > 0, f"No job elements found"
 
 
 if __name__ == "__main__":
