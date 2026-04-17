@@ -39,7 +39,9 @@ class TestScraplingBrowser:
             assert page.status == 200
 
             # Use Scrapling's CSS selector (no BeautifulSoup) - support multiple selectors
-            articles = page.css("article, .job-item, .job-card, .job-result, .job-listing")
+            articles = page.css(
+                "article, .job-item, .job-card, .job-result, .job-listing"
+            )
             assert len(articles) > 0, f"{name}: No jobs found"
 
     @pytest.mark.parametrize(

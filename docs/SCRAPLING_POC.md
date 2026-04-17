@@ -9,7 +9,7 @@ This document proves the Scrapling browser integration uses best practices for J
 1. **StealthySession** - Persistent browser with stealth features
    ```python
    from scrapling.fetchers import StealthySession
-   
+
    with StealthySession(headless=True) as session:
        page = session.fetch(url, timeout=30000, network_idle=True)
    ```
@@ -42,7 +42,7 @@ This document proves the Scrapling browser integration uses best practices for J
 
 - `base_scraper.py` - fetch_page_browser, parse_job_listing_browser
 - `reed_scraper.py` - get_job_details_browser, parse_job_listing_browser
-- `totaljobs_scraper.py` - parse_job_listing_browser  
+- `totaljobs_scraper.py` - parse_job_listing_browser
 - `cvlibrary_scraper.py` - parse_job_listing_browser
 - `test_scrapling_browser.py` - Integration tests
 

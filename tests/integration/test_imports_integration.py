@@ -38,8 +38,6 @@ try:
 
     print("✓ Successfully imported from discovery.platforms.totaljobs_scraper")
 
-
-
     # Test config manager - use Settings instead of ConfigManager
     from src.config_manager import Settings, get_settings  # noqa: F401
 

@@ -15,7 +15,7 @@ def test_reed_live_scraping() -> None:
     """Test scraping real Reed.co.uk using scraper from src."""
     config = PlatformConfig(enabled=True)
     scraper = ReedScraper("reed", config)
-    
+
     # Use browser to fetch page
     with StealthySession(headless=True) as session:
         page = session.fetch(
@@ -42,10 +42,10 @@ def test_reed_scrape_jobs_browser() -> None:
     """Test full scrape_jobs_browser from src."""
     config = PlatformConfig(enabled=True)
     scraper = ReedScraper("reed", config)
-    
+
     # Scrape jobs via browser
     jobs = list(scraper.scrape_jobs_browser("python", "london", max_pages=1))
-    
+
     assert len(jobs) > 0, "Should find jobs"
     job = jobs[0]
     assert "title" in job

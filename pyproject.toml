@@ -44,6 +44,9 @@ lint = ["ruff>=0.1.0", "black>=23.0.0", "mypy>=1.0.0"]
 testpaths = ["tests"]
 pythonpath = ["src"]
 python_files = ["test_*.py"]
+markers = [
+    "integration: Integration tests that hit live sites",
+]
 
 [tool.ruff]
 line-length = 88

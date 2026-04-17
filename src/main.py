@@ -79,13 +79,19 @@ def cli(ctx: click.Context, debug: bool, log_level: str) -> None:
     "--max-pages", "-p", type=int, default=3, help="Max pages to scrape per platform"
 )
 @click.option(
-    "--browser", "-b", is_flag=True, default=False,
-    help="Use browser automation (Scrapling) instead of HTTP"
+    "--browser",
+    "-b",
+    is_flag=True,
+    default=False,
+    help="Use browser automation (Scrapling) instead of HTTP",
 )
 @click.pass_context
 def search(
-    ctx: click.Context, query: str, location: Optional[str], max_pages: int,
-    browser: bool
+    ctx: click.Context,
+    query: str,
+    location: Optional[str],
+    max_pages: int,
+    browser: bool,
 ) -> None:
     """Search for jobs across configured platforms.
 
@@ -128,12 +134,16 @@ def search(
             jobs_scraped = 0
             # Scrape jobs - use browser if --browser flag set
             if browser:
-                for job_data in scraper.scrape_jobs_browser(query, location, max_pages=max_pages):
+                for job_data in scraper.scrape_jobs_browser(
+                    query, location, max_pages=max_pages
+                ):
                     jobs_scraped += 1
                     console.print(f"  [green]✓[/green] {job_data['title'][:50]}")
                     console.print(f"      [dim]{job_data.get('company', '')}[/]")
             else:
-                for job_data in scraper.scrape_jobs(query, location, max_pages=max_pages):
+                for job_data in scraper.scrape_jobs(
+                    query, location, max_pages=max_pages
+                ):
                     jobs_scraped += 1
                     console.print(f"  [green]✓[/green] {job_data['title'][:50]}")
                     console.print(f"      [dim]{job_data['company']}[/]")
