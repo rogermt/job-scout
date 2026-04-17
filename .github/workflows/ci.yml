@@ -24,7 +24,7 @@ jobs:
           source .venv/bin/activate
           pip install coverage
           coverage run -m pytest tests/unit/ --ignore=tests/integration/
-          coverage report --fail-under=76 --show-missing --skip-covered
+          coverage report --fail-under=80 --show-missing --skip-covered
           coverage xml -o coverage.xml
 
       - name: Upload coverage artifact
