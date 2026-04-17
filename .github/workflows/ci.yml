@@ -17,7 +17,6 @@ jobs:
           uv venv
           source .venv/bin/activate
           uv pip install -e ".[test,lint]"
-          uv pip install -r requirements.txt
           pre-commit run --all-files
 
       - name: Run unit tests with coverage
