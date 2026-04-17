@@ -1,4 +1,5 @@
 """Tests for CWJobs scraper."""
+
 import pytest
 from unittest.mock import MagicMock, patch
 

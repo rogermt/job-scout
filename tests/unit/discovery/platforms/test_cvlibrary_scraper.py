@@ -1,4 +1,5 @@
 """Tests for CV-Library scraper."""
+
 import pytest
 from unittest.mock import MagicMock, patch
 

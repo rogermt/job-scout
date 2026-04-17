@@ -8,6 +8,7 @@ This module provides intelligent job matching based on user preferences includin
 - Contract type filtering
 - Company size preferences
 """
+
 import logging
 import re
 from decimal import Decimal, InvalidOperation
