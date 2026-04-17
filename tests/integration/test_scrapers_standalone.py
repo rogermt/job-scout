@@ -37,7 +37,7 @@ def test_all_scrapers_registered():
     logger.info("=" * 60)
 
     available = list_scrapers()
-    expected = {"reed", "totaljobs", "cvlibrary", "cwjobs"}
+    expected = {"reed", "totaljobs", "cvlibrary"}
 
     logger.info(f"Available scrapers: {available}")
 

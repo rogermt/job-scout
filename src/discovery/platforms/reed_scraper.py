@@ -131,9 +131,85 @@ class ReedScraper(BaseScraper):
             "description": description,
         }
 
+    def get_job_details_browser(self, job_url: str) -> Optional[dict[str, Any]]:
+        """Fetch and parse detailed job information using browser."""
+        page = self.fetch_page_browser(job_url)
+        if not page:
+            return None
+
+        # Use Scrapling's CSS selector - ::text applies to every selector
+        desc_elem = page.css(
+            ".job-description__content::text, #job-description::text, .description::text"
+        )
+        description = desc_elem[0].strip() if desc_elem else ""
+
+        return {
+            "url": job_url,
+            "description": description,
+        }
+
     def parse_salary(self, salary_text: str) -> dict[str, Any]:
         """Parse salary text into min, max, and currency."""
         return self._parse_salary(salary_text)
+
+    def parse_job_listing_browser(self, element: Any) -> Optional[dict[str, Any]]:
+        """Parse a job listing from browser page (Reed-specific)."""
+        # Get title - use targeted selector like HTTP version
+        links = element.css("h3.job-result-heading__title a, h2 a, .job-title a")
+        title = links[0].text.strip() if links else "Unknown"
+
+        # Get URL for platform_id
+        url = links[0].attrib.get("href", "") if links else ""
+
+        # Get company
+        companies = element.css(".employer, .company")
+        company = companies[0].text.strip() if companies else ""
+
+        # Get location
+        locs = element.css(".location, li.job-result-heading__meta")
+        location_text = locs[0].text.strip() if locs else ""
+        location = {"original": location_text}
+
+        # Get salary
+        salary_elem = element.css("li.job-result-heading__salary, .salary")
+        salary_text = salary_elem[0].text.strip() if salary_elem else ""
+        salary = self._parse_salary(salary_text)
+
+        # Get contract type
+        type_elem = element.css("li.job-result-heading__type, .type")
+        type_text = type_elem[0].text.strip() if type_elem else ""
+        contract_type = self._parse_contract_type(type_text)
+
+        # Detect remote policy from location text
+        remote_policy = ""
+        remote_types = []
+        if location_text:
+            location_lower = location_text.lower()
+            if "remote" in location_lower or "home" in location_lower:
+                remote_policy = "remote"
+                remote_types = ["remote"]
+
+        # Extract platform_id from URL if possible
+        platform_id = None
+        if "job" in url:
+            parts = url.split("/")
+            for i, part in enumerate(parts):
+                if part == "job" and i + 1 < len(parts):
+                    platform_id = parts[i + 1]
+                    break
+
+        return {
+            "platform_id": platform_id,
+            "title": title,
+            "company": company,
+            "location": location,
+            "salary": salary,
+            "contract_type": contract_type,
+            "remote_policy": remote_policy,
+            "remote_types": remote_types,
+            "url": url,
+            "platform": "reed",
+        }
 
     def _parse_salary(self, salary_text: str) -> dict[str, Any]:
         """Parse salary text into min, max, and currency."""

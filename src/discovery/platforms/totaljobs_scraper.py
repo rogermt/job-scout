@@ -84,9 +84,54 @@ class TotaljobsScraper(BaseScraper):
             return None
         return {}
 
+    def get_job_details_browser(self, job_url: str) -> Optional[dict[str, Any]]:
+        """Fetch and parse detailed job information using browser."""
+        page = self.fetch_page_browser(job_url)
+        if not page:
+            return None
+        return {}
+
     def parse_salary(self, salary_text: str) -> dict[str, Any]:
         """Parse salary text into min, max, and currency."""
         return self._parse_salary(salary_text)
+
+    def parse_job_listing_browser(self, element: Any) -> Optional[dict[str, Any]]:
+        """Parse a job listing from browser page (Totaljobs-specific)."""
+        # Use targeted selector for title like HTTP version
+        links = element.css("h2.job-title, .job-title, h2 a, h3 a")
+        title = links[0].text.strip() if links else "Unknown"
+
+        # Get URL for platform_id
+        url = links[0].attrib.get("href", "") if links else ""
+
+        companies = element.css(".company-name, .company")
+        company = companies[0].text.strip() if companies else "Unknown"
+
+        locs = element.css(".location, .job-location")
+        location_text = locs[0].text.strip() if locs else "Unknown"
+        location = {"original": location_text}
+
+        # Get salary
+        salary_elem = element.css(".salary, [itemprop=baseSalary]")
+        salary_text = salary_elem[0].text.strip() if salary_elem else ""
+        salary = {**self._parse_salary(salary_text), "original": salary_text}
+
+        # Get contract type
+        type_elem = element.css(".job-type, .type, .contract-type")
+        type_text = type_elem[0].text.strip() if type_elem else ""
+        contract_type = self._parse_contract_type(type_text)
+
+        # Extract platform_id from URL/data attributes
+        platform_id = url.split("/")[-1] if url else ""
+
+        return {
+            "platform_id": platform_id,
+            "title": title,
+            "company": company,
+            "location": location,
+            "salary": salary,
+            "contract_type": contract_type,
+        }
 
     def _parse_salary(self, salary_text: str) -> dict[str, Any]:
         """Parse salary text into min, max, and currency."""

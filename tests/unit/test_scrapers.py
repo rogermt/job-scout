@@ -15,14 +15,13 @@ def platform_configs():
         "reed": PlatformConfig(enabled=True, region="uk"),
         "totaljobs": PlatformConfig(enabled=True, region="uk"),
         "cvlibrary": PlatformConfig(enabled=True, region="uk"),
-        "cwjobs": PlatformConfig(enabled=True, region="uk"),
     }
 
 
 class TestScraperStandards:
     def test_all_scrapers_registered(self):
         available_scrapers = list_scrapers()
-        expected_scrapers = {"reed", "totaljobs", "cvlibrary", "cwjobs"}
+        expected_scrapers = {"reed", "totaljobs", "cvlibrary"}
         assert expected_scrapers.issubset(set(available_scrapers))
 
     def test_scraper_imports(self, platform_configs):

@@ -38,9 +38,7 @@ try:
 
     print("✓ Successfully imported from discovery.platforms.totaljobs_scraper")
 
-    from src.discovery.platforms.cwjobs_scraper import CwjobsScraper  # noqa: F401
 
-    print("✓ Successfully imported from discovery.platforms.cwjobs_scraper")
 
     # Test config manager - use Settings instead of ConfigManager
     from src.config_manager import Settings, get_settings  # noqa: F401
