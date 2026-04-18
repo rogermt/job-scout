@@ -51,4 +51,3 @@ Edit `config/config.yaml` to set your preferences:
 ## License
 
 MIT
-# Test
