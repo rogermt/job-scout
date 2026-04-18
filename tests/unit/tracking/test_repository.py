@@ -71,10 +71,13 @@ class TestJobRepository:
 
     def test_upsert_job_update(self) -> None:
         """Test updating existing job."""
+        from src.tracking.models import Job
+
         repo = JobRepository()
         session = MagicMock()
 
-        existing_job = MagicMock()
+        # Use spec'd mock so attribute assignments behave like real Job model
+        existing_job = MagicMock(spec=Job)
         session.scalar.return_value = existing_job
 
         job_data = {

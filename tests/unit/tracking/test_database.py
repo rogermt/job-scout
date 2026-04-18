@@ -2,7 +2,7 @@
 
 import tempfile
 from pathlib import Path
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -34,10 +34,10 @@ class TestDatabaseManager:
             manager = DatabaseManager(config)
             manager.init_schema()
 
-            # Check tables exist
-            from src.tracking.models import Base
+            # Verify tables exist in actual database
+            from sqlalchemy import inspect
 
-            tables = list(Base.metadata.tables.keys())
+            tables = inspect(manager.engine).get_table_names()
             assert "jobs" in tables
 
     def test_session_context_manager(self) -> None:
@@ -63,11 +63,16 @@ class TestDatabaseManager:
             manager = DatabaseManager(config)
             manager.init_schema()
 
-            with pytest.raises(ValueError):
-                with manager.session():
-                    raise ValueError("test error")
-
-            # If we get here, rollback was called
+            # Get real session and wrap its rollback method
+            real_session = manager.SessionLocal()
+            with patch.object(manager, "SessionLocal", return_value=real_session):
+                with patch.object(
+                    real_session, "rollback", wraps=real_session.rollback
+                ) as rb:
+                    with pytest.raises(ValueError):
+                        with manager.session():
+                            raise ValueError("test error")
+                    rb.assert_called_once()
 
 
 class TestInitDatabase:

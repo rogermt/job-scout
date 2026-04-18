@@ -310,7 +310,7 @@ class TestParseJobListingBrowser:
         assert result["salary"]["min"] == 40000
         assert result["salary"]["max"] == 50000
         assert result["contract_type"] == "permanent"
-        assert "platform_id" in result
+        assert result["platform_id"] == "senior-python-developer-12345"
         assert "/jobs/senior-python-developer-12345" in result["url"]
 
     def test_parse_job_listing_browser_minimal(self, scraper: ReedScraper) -> None:
@@ -326,7 +326,7 @@ class TestParseJobListingBrowser:
 
         assert result is not None
         assert result["title"] == "Developer"
-        assert "platform_id" in result
+        assert result["platform_id"] == "dev-999"
 
     def test_parse_job_listing_browser_remote_detection(
         self, scraper: ReedScraper

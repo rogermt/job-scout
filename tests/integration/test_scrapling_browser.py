@@ -8,6 +8,8 @@ import pytest
 
 from scrapling.fetchers import StealthySession
 
+pytestmark = pytest.mark.integration
+
 
 class TestScraplingBrowser:
     """Integration tests for browser-based scraping via Scrapling."""

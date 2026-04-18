@@ -191,12 +191,11 @@ class ReedScraper(BaseScraper):
 
         # Extract platform_id from URL if possible
         platform_id = None
-        if "job" in url:
-            parts = url.split("/")
-            for i, part in enumerate(parts):
-                if part == "job" and i + 1 < len(parts):
-                    platform_id = parts[i + 1]
-                    break
+        if url:
+            # Handle both /jobs/ and /job/ URL patterns
+            parts = url.rstrip("/").split("/")
+            if parts:
+                platform_id = parts[-1]
 
         return {
             "platform_id": platform_id,

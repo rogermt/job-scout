@@ -159,14 +159,24 @@ class BaseScraper(ABC):
         pass
 
     def scrape_jobs(
-        self, query: str, location: Optional[str] = None, max_pages: int = 5
+        self,
+        query: str,
+        location: Optional[str] = None,
+        max_pages: int = 5,
+        start_page: int = 0,
     ) -> Generator[dict[str, Any], None, None]:
         """Scrape jobs from the platform.
 
         Uses lazy generator for memory efficiency - yields one job at a time.
         Only fetches next page when previous is consumed.
+
+        Args:
+            query: Job search query
+            location: Job location filter
+            max_pages: Maximum number of pages to scrape
+            start_page: Page number to start scraping from (for resuming)
         """
-        current_page = 0
+        current_page = start_page
         while current_page < max_pages:
             search_url = self.get_search_url(query, location, page=current_page)
             soup = self.fetch_page(search_url)
@@ -192,11 +202,22 @@ class BaseScraper(ABC):
             search_url = self.get_search_url(query, location, page=current_page)
             page = self.fetch_page_browser(search_url)
             if not page:
-                # Fall back to HTTP on browser failure
-                yield from self.scrape_jobs(query, location, max_pages - current_page)
+                # Fall back to HTTP on browser failure, resume from next page
+                if current_page == 0:
+                    # If first page failed, start from beginning
+                    yield from self.scrape_jobs(query, location, max_pages)
+                else:
+                    # Resume from where browser left off to avoid duplicates
+                    yield from self.scrape_jobs(
+                        query, location, max_pages, start_page=current_page
+                    )
                 return
             # Extract using Scrapling CSS (returns list of elements)
-            job_elements = page.css("article, .job-item, .job-card, .job-result")
+            # Include CV-Library selectors for broader platform support
+            job_elements = page.css(
+                "article, .job-item, .job-card, .job-result, "
+                ".job-results-item, .job-listing"
+            )
             for element in job_elements:
                 job_data = self.parse_job_listing_browser(element)
                 if job_data:

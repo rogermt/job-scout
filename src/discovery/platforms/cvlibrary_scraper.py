@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 import re
 from typing import Any, Optional
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urlparse
 
 from bs4 import BeautifulSoup, Tag
 
@@ -112,11 +112,15 @@ class CvlibraryScraper(BaseScraper):
         desc_elem = element.css("p.summary, .job-description")
         description = desc_elem[0].text.strip() if desc_elem else ""
 
-        # Get job_id from data attribute or URL
+        # Get job_id from data attribute, id attribute, or URL
         job_id = element.attrib.get("data-job-id", element.attrib.get("id", ""))
+        if not job_id and url:
+            # Fall back to extracting ID from URL path
+            parsed = urlparse(url)
+            job_id = parsed.path.rstrip("/").split("/")[-1]
 
         return {
-            "platform_id": job_id,
+            "platform_id": str(job_id),
             "title": title,
             "company": company,
             "location": location,
@@ -204,8 +208,8 @@ class CvlibraryScraper(BaseScraper):
         company_elems = page.css("span.company-name::text, .company::text")
         company = company_elems[0].strip() if company_elems else ""
 
-        desc_elems = page.css("div.job-description::text, .description::text")
-        description = desc_elems[0].strip() if desc_elems else ""
+        desc_elems = page.css("div.job-description, .description")
+        description = desc_elems[0].text.strip() if desc_elems else ""
 
         return {
             "title": title,

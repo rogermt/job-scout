@@ -34,8 +34,7 @@ This document proves the Scrapling browser integration uses best practices for J
 
 ### Test Results
 
-- 194 tests passed ✅
-- 1 skipped (live Reed test - requires JS rendering)
+- All tests passing ✅ (196/196)
 - Integration tests verify browser scraping works
 
 ### Files Changed
