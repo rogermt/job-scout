@@ -6,7 +6,6 @@ base_scraper.py, following ForgeSyte registry pattern guidance.
 
 # Import modules for side-effect registration via @register_scraper
 from . import cvlibrary_scraper  # noqa: F401
-from . import cwjobs_scraper  # noqa: F401
 from . import reed_scraper  # noqa: F401
 from . import totaljobs_scraper  # noqa: F401
 

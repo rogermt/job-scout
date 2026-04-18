@@ -1,4 +1,5 @@
 """Job repository for database operations."""
+
 from __future__ import annotations
 
 from decimal import Decimal, InvalidOperation

@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 import re
 from typing import Any, Optional
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urlparse
 
 from bs4 import BeautifulSoup, Tag
 
@@ -80,6 +80,57 @@ class CvlibraryScraper(BaseScraper):
             "platform": self.platform_name,
         }
 
+    def parse_job_listing_browser(self, element: Any) -> Optional[dict[str, Any]]:
+        """Parse a job listing from browser page (CVLibrary-specific)."""
+        # Use targeted selector for title like HTTP version
+        links = element.css("h3.title a, h2 a.job-title, a.job-title")
+        title = links[0].text.strip() if links else "Unknown"
+
+        # Get URL
+        url = links[0].attrib.get("href", "") if links else ""
+        if url and not url.startswith("http"):
+            url = f"{self.base_url}{url}"
+
+        companies = element.css("span.company-name, a.company")
+        company = companies[0].text.strip() if companies else ""
+
+        locs = element.css("span.location, li.location")
+        location_text = locs[0].text.strip() if locs else ""
+        location = {"original": location_text}
+
+        # Get salary
+        salary_elem = element.css("span.salary, li.salary")
+        salary_text = salary_elem[0].text.strip() if salary_elem else ""
+        salary = self._parse_salary(salary_text)
+
+        # Get posted date
+        posted_elem = element.css("span.posted-date, .date-posted")
+        posted_text = posted_elem[0].text.strip() if posted_elem else ""
+        posted_date = self._parse_posted_date(posted_text)
+
+        # Get description
+        desc_elem = element.css("p.summary, .job-description")
+        description = desc_elem[0].text.strip() if desc_elem else ""
+
+        # Get job_id from data attribute, id attribute, or URL
+        job_id = element.attrib.get("data-job-id", element.attrib.get("id", ""))
+        if not job_id and url:
+            # Fall back to extracting ID from URL path
+            parsed = urlparse(url)
+            job_id = parsed.path.rstrip("/").split("/")[-1]
+
+        return {
+            "platform_id": str(job_id),
+            "title": title,
+            "company": company,
+            "location": location,
+            "salary": salary,
+            "url": url,
+            "posted_date": posted_date,
+            "description": description,
+            "platform": "cvlibrary",
+        }
+
     def _parse_salary(self, salary_text: str) -> dict[str, Any]:
         if not salary_text:
             return {"min": None, "max": None, "currency": "GBP", "period": "yearly"}
@@ -137,6 +188,28 @@ class CvlibraryScraper(BaseScraper):
 
         description_elem = soup.select_one("div.job-description, .description")
         description = description_elem.get_text(strip=True) if description_elem else ""
+
+        return {
+            "title": title,
+            "company": company,
+            "description": description,
+            "url": job_url,
+        }
+
+    def get_job_details_browser(self, job_url: str) -> Optional[dict[str, Any]]:
+        """Fetch and parse detailed job information using browser."""
+        page = self.fetch_page_browser(job_url)
+        if not page:
+            return None
+
+        title_elems = page.css("h1.job-title::text, h1::text")
+        title = title_elems[0].strip() if title_elems else ""
+
+        company_elems = page.css("span.company-name::text, .company::text")
+        company = company_elems[0].strip() if company_elems else ""
+
+        desc_elems = page.css("div.job-description, .description")
+        description = desc_elems[0].text.strip() if desc_elems else ""
 
         return {
             "title": title,

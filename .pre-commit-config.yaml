@@ -1,12 +1,13 @@
 repos:
   - repo: https://github.com/psf/black
-    rev: 23.12.1
+    rev: 26.3.1
     hooks:
       - id: black
         exclude: '^Scrapling/'
+        args: [--target-version, py311]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.1.6
+    rev: v0.15.11
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
@@ -22,14 +23,6 @@ repos:
       - id: check-yaml
       - id: check-added-large-files
 
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.8.0
-    hooks:
-      - id: mypy
-        additional_dependencies: [pydantic, sqlalchemy, beautifulsoup4, requests, python-dateutil, pydantic-settings, email-validator]
-        args: [--config-file, mypy.ini]
-        stages: [manual]
-
   - repo: local
     hooks:
       - id: uv-lock
@@ -37,3 +30,4 @@ repos:
         entry: uv pip compile requirements.in -o requirements.txt
         language: system
         pass_filenames: false
+        stages: [manual]

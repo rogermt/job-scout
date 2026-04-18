@@ -27,6 +27,8 @@ dependencies = [
     "python-dateutil>=2.0.0",
     "click>=8.0.0",
     "rich>=13.0.0",
+    "scrapling>=0.4.6",
+    "pre-commit>=3.0.0",
 ]
 
 [project.scripts]
@@ -43,6 +45,9 @@ lint = ["ruff>=0.1.0", "black>=23.0.0", "mypy>=1.0.0"]
 testpaths = ["tests"]
 pythonpath = ["src"]
 python_files = ["test_*.py"]
+markers = [
+    "integration: Integration tests that hit live sites",
+]
 
 [tool.ruff]
 line-length = 88

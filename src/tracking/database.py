@@ -1,4 +1,5 @@
 """Database management (SQLAlchemy SQLite)."""
+
 from __future__ import annotations
 
 from contextlib import contextmanager

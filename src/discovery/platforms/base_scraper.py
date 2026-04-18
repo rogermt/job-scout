@@ -98,6 +98,36 @@ class BaseScraper(ABC):
         except requests.RequestException:
             return None
 
+    def fetch_page_browser(
+        self, url: str, timeout: int = 30000, network_idle: bool = True
+    ) -> Optional[Any]:
+        """Fetch page using Scrapling StealthySession (browser automation).
+
+        Use this method for sites that require JavaScript rendering or have anti-bot
+        protections.
+
+        Args:
+            url: Target URL
+            timeout: Request timeout in ms (default 30s)
+            network_idle: Wait for network idle before returning
+
+        Returns:
+            Scrapling Response object with .body and .css() methods,
+            or None if failed
+        """
+        try:
+            from scrapling.fetchers import StealthySession
+
+            with StealthySession(headless=True) as session:
+                page = session.fetch(url, timeout=timeout, network_idle=network_idle)
+                return page
+        except Exception as e:
+            logger.warning(
+                "Scrapling fetch failed",
+                extra={"url": url, "error": str(e)},
+            )
+            return None
+
     def is_enabled(self) -> bool:
         """Check if this scraper is enabled."""
         return self.config.enabled
@@ -129,14 +159,24 @@ class BaseScraper(ABC):
         pass
 
     def scrape_jobs(
-        self, query: str, location: Optional[str] = None, max_pages: int = 5
+        self,
+        query: str,
+        location: Optional[str] = None,
+        max_pages: int = 5,
+        start_page: int = 0,
     ) -> Generator[dict[str, Any], None, None]:
         """Scrape jobs from the platform.
 
         Uses lazy generator for memory efficiency - yields one job at a time.
         Only fetches next page when previous is consumed.
+
+        Args:
+            query: Job search query
+            location: Job location filter
+            max_pages: Maximum number of pages to scrape
+            start_page: Page number to start scraping from (for resuming)
         """
-        current_page = 0
+        current_page = start_page
         while current_page < max_pages:
             search_url = self.get_search_url(query, location, page=current_page)
             soup = self.fetch_page(search_url)
@@ -148,6 +188,72 @@ class BaseScraper(ABC):
                 if job_data:
                     yield job_data
             current_page += 1
+
+    def scrape_jobs_browser(
+        self, query: str, location: Optional[str] = None, max_pages: int = 5
+    ) -> Generator[dict[str, Any], None, None]:
+        """Scrape jobs using browser automation.
+
+        Use this for sites that require JavaScript rendering.
+        Falls back to HTTP scrape_jobs on browser failure.
+        """
+        current_page = 0
+        while current_page < max_pages:
+            search_url = self.get_search_url(query, location, page=current_page)
+            page = self.fetch_page_browser(search_url)
+            if not page:
+                # Fall back to HTTP on browser failure, resume from next page
+                if current_page == 0:
+                    # If first page failed, start from beginning
+                    yield from self.scrape_jobs(query, location, max_pages)
+                else:
+                    # Resume from where browser left off to avoid duplicates
+                    yield from self.scrape_jobs(
+                        query, location, max_pages, start_page=current_page
+                    )
+                return
+            # Extract using Scrapling CSS (returns list of elements)
+            # Include CV-Library selectors for broader platform support
+            job_elements = page.css(
+                "article, .job-item, .job-card, .job-result, "
+                ".job-results-item, .job-listing"
+            )
+            for element in job_elements:
+                job_data = self.parse_job_listing_browser(element)
+                if job_data:
+                    yield job_data
+            current_page += 1
+
+    def parse_job_listing_browser(self, element: Any) -> Optional[dict[str, Any]]:
+        """Parse a job listing element from browser page.
+
+        Override in subclass to handle Scrapling elements.
+        Default implementation tries compatible CSS selectors.
+        """
+        # Try common selectors - adapt based on site
+        try:
+            title_elem = element.css("a::text, h3 a::text, .title a::text")
+            title = title_elem[0].strip() if title_elem else "Unknown"
+        except Exception:
+            title = "Unknown"
+
+        try:
+            company_elem = element.css(".company::text, .employer::text, span::text")
+            company = company_elem[0].strip() if company_elem else ""
+        except Exception:
+            company = ""
+
+        try:
+            loc_elem = element.css(".location::text, .job-location::text")
+            location = {"original": loc_elem[0].strip() if loc_elem else ""}
+        except Exception:
+            location = {"original": ""}
+
+        return {
+            "title": title,
+            "company": company,
+            "location": location,
+        }
 
     def has_next_page(self, soup: BeautifulSoup, current_page: int) -> bool:
         """Check if there are more pages to scrape."""
@@ -243,8 +349,9 @@ class BaseScraper(ABC):
         """Parse 'posted X days ago' text into datetime."""
         import re
         from dateutil.relativedelta import relativedelta
+        from datetime import timezone
 
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         times = re.findall(r"(\d+)\s+(day|week|month|hour)", text, re.IGNORECASE)
         if times:
             amount = int(times[0][0])

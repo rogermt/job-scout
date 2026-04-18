@@ -1,4 +1,5 @@
 """Tests for base_scraper module."""
+
 from decimal import Decimal
 
 import pytest

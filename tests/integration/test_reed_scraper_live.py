@@ -1,60 +1,57 @@
 """Live Reed.co.uk integration test.
 
-Tests against REAL Reed.co.uk to catch selector changes.
+Tests Scrapling integration with src/discovery/platforms/reed_scraper.py
 """
 
 import pytest
-import requests
-from bs4 import BeautifulSoup
+from scrapling.fetchers import StealthySession
+
+from src.discovery.platforms.reed_scraper import ReedScraper
+from src.config_manager import PlatformConfig
 
 
 @pytest.mark.integration
 def test_reed_live_scraping() -> None:
-    """Test scraping real Reed.co.uk to verify selectors work."""
-    url = "https://www.reed.co.uk/jobs?keywords=python&location=london"
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-    }
+    """Test scraping real Reed.co.uk using scraper from src."""
+    config = PlatformConfig(enabled=True)
+    scraper = ReedScraper("reed", config)
 
-    resp = requests.get(url, headers=headers, timeout=30)
-    assert resp.status_code == 200, f"Expected 200, got {resp.status_code}"
+    # Use browser to fetch page
+    with StealthySession(headless=True) as session:
+        page = session.fetch(
+            "https://www.reed.co.uk/jobs?keywords=python&location=london",
+            timeout=30000,
+            network_idle=True,
+        )
+        assert page is not None
+        assert page.status == 200
 
-    soup = BeautifulSoup(resp.text, "html.parser")
+        # Use scraper's parse method
+        articles = page.css("article")
+        assert len(articles) > 0, "No job articles found"
 
-    # Current selectors in reed_scraper.py
-    job_elements = soup.select("article.job-result, article.job-card")
+        # Parse using scraper's method
+        job = scraper.parse_job_listing_browser(articles[0])
+        assert job is not None
+        assert "title" in job
+        assert len(job["title"]) > 0
 
-    print("\n=== DEBUG ===")
-    print(f"Status: {resp.status_code}")
-    print(f"Content length: {len(resp.text)}")
-    print(
-        f"Selectors 'article.job-result, article.job-card' found: {len(job_elements)}"
-    )
 
-    if not job_elements:
-        # Try alternative selectors
-        alt_selectors = [
-            ".job-card",
-            ".job-result",
-            "[data-job-id]",
-            ".results-item",
-            ".job-item",
-        ]
-        for sel in alt_selectors:
-            found = soup.select(sel)
-            print(f"  Alternative '{sel}': {len(found)}")
+@pytest.mark.integration
+def test_reed_scrape_jobs_browser() -> None:
+    """Test full scrape_jobs_browser from src."""
+    config = PlatformConfig(enabled=True)
+    scraper = ReedScraper("reed", config)
 
-    # Print snippet of HTML structure
-    if job_elements:
-        print("\nFirst job element:")
-        print(job_elements[0].prettify()[:500])
-    else:
-        print("\nNo job elements found. HTML snippet:")
-        print(resp.text[3000:6000])
+    # Scrape jobs via browser
+    jobs = list(scraper.scrape_jobs_browser("python", "london", max_pages=1))
 
-    # Assert jobs found
-    assert len(job_elements) > 0, "No job elements found - selectors may have changed"
+    assert len(jobs) > 0, "Should find jobs"
+    job = jobs[0]
+    assert "title" in job
+    assert "company" in job
 
 
 if __name__ == "__main__":
     test_reed_live_scraping()
+    test_reed_scrape_jobs_browser()

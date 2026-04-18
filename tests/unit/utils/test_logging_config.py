@@ -7,7 +7,6 @@ import tempfile
 from pathlib import Path
 from logging.handlers import RotatingFileHandler
 
-
 sys.path.insert(0, "src")
 
 from logging_config import JsonFormatter, setup_logging, get_logger
