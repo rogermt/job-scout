@@ -259,6 +259,94 @@ class TestOtherMethods:
         assert scraper.get_platform_name() == "Reed"
 
 
+class TestParseJobListingBrowser:
+    """Test parse_job_listing_browser (scrapling-based parser)."""
+
+    @pytest.fixture
+    def scraper(self) -> ReedScraper:
+        """Fixture for scraper instance."""
+        mock_config = Mock()
+        mock_config.enabled = True
+        return ReedScraper("reed", mock_config)
+
+    def _create_mock_element(self, html: str) -> Mock:
+        """Create a mock scrapling element that behaves like a scrapling element."""
+        soup = BeautifulSoup(html, "html.parser")
+
+        element = Mock()
+
+        def css_selector(selector: str):
+            result = soup.select(selector)
+            # Add attrib attribute to match scrapling API
+            for el in result:
+                el.attrib = el.attrs if hasattr(el, "attrs") else {}
+            # Return list-like object that supports [0] indexing
+            return result
+
+        element.css = css_selector
+        return element
+
+    def test_parse_job_listing_browser_complete(self, scraper: ReedScraper) -> None:
+        """Test parsing a complete job listing with scrapling."""
+        html = """
+        <article class="job-result">
+        <h3 class="job-result-heading__title">
+          <a href="/jobs/senior-python-developer-12345">Senior Python Developer</a>
+        </h3>
+        <div class="employer">Tech Corp Ltd</div>
+        <li class="job-result-heading__meta">London, UK</li>
+        <li class="job-result-heading__salary">£40,000 - £50,000 per annum</li>
+        <li class="job-result-heading__type">Permanent</li>
+        </article>
+        """
+        element = self._create_mock_element(html)
+
+        result = scraper.parse_job_listing_browser(element)
+
+        assert result is not None
+        assert result["title"] == "Senior Python Developer"
+        assert result["company"] == "Tech Corp Ltd"
+        assert result["location"]["original"] == "London, UK"
+        assert result["salary"]["min"] == 40000
+        assert result["salary"]["max"] == 50000
+        assert result["contract_type"] == "permanent"
+        assert "platform_id" in result
+        assert "/jobs/senior-python-developer-12345" in result["url"]
+
+    def test_parse_job_listing_browser_minimal(self, scraper: ReedScraper) -> None:
+        """Test minimal job listing parsing."""
+        html = """
+        <article>
+        <h2><a href="/jobs/dev-999">Developer</a></h2>
+        </article>
+        """
+        element = self._create_mock_element(html)
+
+        result = scraper.parse_job_listing_browser(element)
+
+        assert result is not None
+        assert result["title"] == "Developer"
+        assert "platform_id" in result
+
+    def test_parse_job_listing_browser_remote_detection(
+        self, scraper: ReedScraper
+    ) -> None:
+        """Test remote detection in browser parser."""
+        html = """
+        <article>
+        <h2><a href="/jobs/remote-dev-123">Remote Developer</a></h2>
+        <li class="location">Remote (UK)</li>
+        </article>
+        """
+        element = self._create_mock_element(html)
+
+        result = scraper.parse_job_listing_browser(element)
+
+        assert result is not None
+        assert result["remote_policy"] == "remote"
+        assert "remote" in result["remote_types"]
+
+
 class TestScrapeJobDetails:
     """Test job details scraping."""
 
